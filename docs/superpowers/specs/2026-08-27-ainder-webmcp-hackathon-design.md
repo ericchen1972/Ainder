@@ -1,8 +1,12 @@
 # Ainder — WebMCP 黑客松企劃書
 
-版本：1.0
+版本：1.1
 日期：2026-08-27
 定位：以 ChatGPT 長期記憶提供交友第二意見的 WebMCP 體驗
+
+Repository：`https://github.com/ericchen1972/Ainder`
+
+正式路徑：`https://sweety.tw/ainder/`
 
 ## 1. 企劃摘要
 
@@ -315,18 +319,32 @@ Like 目前對象，保存可分享意見，並回傳是否形成雙向 Like。
 
 ### 12.1 部署與網域
 
-- 建立獨立 Ainder 專案與公開 Git repository。
-- 建議使用 `ainder.sweety.tw`，保留 `sweety.tw` 現有反詐產品。
-- 前端與伺服器端頁面部署於 Vercel。
-- 使用 Supabase 提供 PostgreSQL、Google Auth 與圖片儲存。
-- 透過 Cloudflare DNS 將子網域指向部署平台。
+- Ainder 使用獨立公開 repository：`https://github.com/ericchen1972/Ainder`。
+- 正式網址使用 `https://sweety.tw/ainder/`，不建立子網域。
+- 程式透過 FTP 上傳至 Sweety 網站根目錄下的 `/sweety.tw/ainder/`。
+- FTP 連線設定沿用 SweetyGame 本機的 `web/sftp-config.json`，不得複製或提交到 Ainder repository。
+- 部署腳本必須以 `FTP_BINARY` 上傳，建立缺少的遠端目錄，並逐檔比對遠端大小與本機檔案大小。
+- Ainder 使用 SweetyGame 現有 MySQL 連線設定與同一資料庫，但所有資料表使用 `ainder_` 前綴隔離。
+- 正式環境由 Ainder PHP bootstrap 載入 Sweety 網站根目錄既有的 `mysql.php`；Ainder repository 不保存資料庫帳密。
+- 使用者照片儲存在 `/sweety.tw/ainder/uploads/`，資料庫只保存相對路徑。上傳目錄不得允許執行 PHP。
+- Google OAuth callback 固定為 `https://sweety.tw/ainder/auth/google/callback.php`。
+- 所有前端資源、導向與 API 路徑都必須支援 `/ainder/` base path，不能假設部署在網域根目錄。
 
-### 12.2 為何不沿用舊交友網站
+### 12.2 執行架構
+
+- 前端：HTML、CSS 與 JavaScript，提供 Tinder 式卡片與 Modal 互動。
+- 後端：PHP 8.2，處理 Google 登入、Session、圖片上傳、Like、Match 與 WebMCP 對應資料存取。
+- 資料庫：沿用 SweetyGame MySQL 設定，在相同資料庫建立 Ainder 專用資料表。
+- Session：使用安全 Cookie，限制 `Secure`、`HttpOnly` 與適當的 `SameSite` 設定。
+- WebMCP：由 Ainder 頁面註冊工具，工具執行時呼叫同源 PHP endpoint，並沿用目前登入 Session 與伺服器端授權檢查。
+- 本機開發與測試使用不含真實憑證的 example 設定或測試替身。
+
+### 12.3 為何不沿用舊交友網站程式
 
 - 舊 PHP 程式不是目前 Ainder 專案的一部分。
 - 缺少符合本案需求的 Google 登入與 WebMCP 架構。
 - 黑客松要求公開原始碼與可辨識的新增工作，獨立 repository 更容易呈現提交期間的實作。
-- 獨立部署可以避免影響 `sweety.tw` 現有反詐產品與資料。
+- Ainder 雖部署於同一網域並沿用 FTP／資料庫連線設定，程式、資料表、上傳目錄與網址路徑仍保持隔離，避免影響 `sweety.tw` 現有反詐產品。
 
 ## 13. 核心資料模型
 
@@ -384,6 +402,8 @@ Like 目前對象，保存可分享意見，並回傳是否形成雙向 Like。
 
 雙向 Like 由兩筆方向相反的 Like 判斷，不另外建立聊天室。
 
+正式資料表名稱分別為 `ainder_users`、`ainder_user_photos`、`ainder_agent_profiles`、`ainder_candidate_opinions` 與 `ainder_likes`。
+
 ## 14. Demo 腳本
 
 Demo 影片控制在三分鐘內，建議腳本如下：
@@ -422,8 +442,9 @@ Ainder 不讓 AI 取代人挑選，也不以分數自動配對。它讓兩個各
 
 ### 第 1 天
 
-- 建立公開 repository、授權檔與部署骨架。
-- 完成 Supabase schema、Google Auth 與基本個人資料。
+- 同步公開 repository、加入授權檔並建立 `/ainder/` base-path 部署骨架。
+- 建立 Ainder MySQL migration、Google Auth 與基本個人資料。
+- 建立沿用 SweetyGame FTP 設定但不提交憑證的部署腳本。
 
 ### 第 2 天
 
@@ -457,6 +478,7 @@ Ainder 不讓 AI 取代人挑選，也不以分數自動配對。它讓兩個各
 ## 17. 驗收條件
 
 - 使用者能以 Google 登入並完成最小個人資料。
+- Google OAuth callback 能在 `https://sweety.tw/ainder/` 路徑下完成登入並返回 Ainder。
 - 沒有主照片時不能進入探索頁。
 - 最多只能上傳一張主照片與三張其他照片。
 - LINE／WhatsApp 至少填寫一項。
@@ -469,6 +491,8 @@ Ainder 不讓 AI 取代人挑選，也不以分數自動配對。它讓兩個各
 - 雙向 Like 後雙方能看到兩份可分享意見與彼此聯絡資料。
 - 任何 WebMCP 工具都不能在未 Match 時取得聯絡資料。
 - 公開 repository 包含開源授權、完整原始碼與本機執行說明。
+- FTP 部署後逐檔大小驗證通過，且 `https://sweety.tw/ainder/` 可正常載入。
+- 正式資料庫只新增或讀寫 `ainder_` 前綴資料表，不修改 SweetyGame 既有資料表。
 
 ## 18. 主要風險與處理方式
 
@@ -495,6 +519,18 @@ WebMCP 是由 ChatGPT 發現並呼叫網站工具。Ask AI 按鈕可以設定目
 LINE 與 WhatsApp 屬於私密聯絡資料。
 
 處理方式：只在雙向 Like 後揭露；公開卡片、Agent Profile 與 WebMCP 對象讀取工具均不得回傳聯絡資料。
+
+### 子目錄部署路徑錯誤
+
+若程式假設自己位於網域根目錄，Google OAuth callback、圖片、JavaScript、PHP endpoint 或頁面導向可能錯誤地指向 `https://sweety.tw/`。
+
+處理方式：所有公開網址統一以 `/ainder/` 為 base path，針對直接載入、登入 callback、重新整理、圖片與 WebMCP endpoint 分別驗證。
+
+### 共用資料庫與主機
+
+Ainder 與 SweetyGame 共用 FTP 帳號、網站主機與資料庫連線，錯誤 migration 或部署範圍可能影響既有服務。
+
+處理方式：部署目標限定為 `/sweety.tw/ainder/`；資料表一律使用 `ainder_` 前綴；migration 不得修改或刪除既有資料表；憑證只從既有本機設定與正式環境根目錄設定載入，不進入公開 repository。
 
 ## 19. 第一版結論
 
