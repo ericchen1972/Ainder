@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__.'/image_processor.php';
+
 const AINDER_MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 const AINDER_PHOTO_MIME_EXTENSIONS = [
     'image/jpeg' => 'jpg',
@@ -81,12 +83,21 @@ function ainder_stage_photos(
                 throw new InvalidArgumentException($error);
             }
 
-            $extension = ainder_photo_extension($photo);
-            $path = rtrim($directory, '/').'/'.bin2hex(random_bytes(16)).'.'.$extension;
-            if (!$mover($photo['tmp_name'], $path)) {
+            $sourcePath = rtrim($directory, '/')
+                .'/'.bin2hex(random_bytes(16)).'.source';
+            $processedPath = rtrim($directory, '/')
+                .'/'.bin2hex(random_bytes(16)).'.webp';
+            if (!$mover($photo['tmp_name'], $sourcePath)) {
                 throw new RuntimeException('Unable to stage uploaded photo.');
             }
-            $staged[] = $path;
+            try {
+                ainder_process_image($sourcePath, $processedPath);
+                $staged[] = $processedPath;
+            } finally {
+                if (is_file($sourcePath)) {
+                    unlink($sourcePath);
+                }
+            }
         }
     } catch (Throwable $error) {
         ainder_cleanup_photo_paths($staged);
@@ -108,8 +119,10 @@ function ainder_finalize_photos(
 
     $finalPaths = [];
     foreach ($stagedPaths as $stagedPath) {
-        $extension = strtolower((string) pathinfo($stagedPath, PATHINFO_EXTENSION));
-        $finalPath = $directory.'/'.bin2hex(random_bytes(16)).'.'.$extension;
+        if (strtolower((string) pathinfo($stagedPath, PATHINFO_EXTENSION)) !== 'webp') {
+            throw new RuntimeException('Only processed WebP files can be finalized.');
+        }
+        $finalPath = $directory.'/'.bin2hex(random_bytes(16)).'.webp';
         if (!rename($stagedPath, $finalPath)) {
             ainder_cleanup_photo_paths($finalPaths);
             throw new RuntimeException('Unable to finalize uploaded photo.');

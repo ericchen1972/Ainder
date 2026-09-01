@@ -74,3 +74,18 @@ test('photo script enforces two to six selected files', function () use ($profil
     expect_same(true, str_contains($source, 'DataTransfer'));
     expect_same(true, str_contains($source, 'URL.revokeObjectURL'));
 });
+
+test('manual and Agent uploads share the image processor', function () use ($profileRoot): void {
+    $photos = file_get_contents($profileRoot.'/web/lib/photos.php');
+    $register = file_get_contents($profileRoot.'/web/profile/register.php');
+
+    expect_same(true, str_contains($photos, 'ainder_process_image'));
+    expect_same(
+        true,
+        str_contains(
+            $register,
+            "require_once dirname(__DIR__).'/lib/image_processor.php'"
+        )
+    );
+    expect_same(true, str_contains($photos, "'.webp'"));
+});

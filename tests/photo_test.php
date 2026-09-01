@@ -58,7 +58,11 @@ test('valid PNG can be staged and cleaned', function (): void {
 
     expect_same(1, count($staged));
     expect_same(true, is_file($staged[0]));
-    expect_same('png', pathinfo($staged[0], PATHINFO_EXTENSION));
+    expect_same('webp', pathinfo($staged[0], PATHINFO_EXTENSION));
+    $info = getimagesize($staged[0]);
+    expect_same(720, $info[0]);
+    expect_same(1280, $info[1]);
+    expect_same('image/webp', $info['mime']);
 
     ainder_cleanup_photo_paths($staged);
     expect_same(false, is_file($staged[0]));

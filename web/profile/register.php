@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__).'/lib/auth.php';
 require_once dirname(__DIR__).'/lib/config.php';
 require_once dirname(__DIR__).'/lib/database.php';
+require_once dirname(__DIR__).'/lib/image_processor.php';
 require_once dirname(__DIR__).'/lib/photos.php';
 require_once dirname(__DIR__).'/lib/registration.php';
 require_once dirname(__DIR__).'/lib/session.php';
