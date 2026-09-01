@@ -18,6 +18,9 @@ $flash = ainder_pull_form_flash();
 $errors = is_array($flash['errors'] ?? null) ? $flash['errors'] : [];
 $old = is_array($flash['input'] ?? null) ? $flash['input'] : [];
 $manualOpen = ($_GET['manual'] ?? '') === '1' || $errors !== [];
+$assetRoot = dirname(__DIR__).'/assets';
+$cssVersion = (string) filemtime($assetRoot.'/app.css');
+$scriptVersion = (string) filemtime($assetRoot.'/profile.js');
 $maximumBirthDate = (new DateTimeImmutable('today'))->modify('-18 years')->format('Y-m-d');
 $displayName = trim((string) ($old['display_name'] ?? $identity['display_name'] ?? ''));
 $birthDate = (string) ($old['birth_date'] ?? '');
@@ -37,8 +40,8 @@ function ainder_field_error(array $errors, string $field): string
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111319">
     <title>建立 Ainder 帳號</title>
-    <link rel="stylesheet" href="/ainder/assets/app.css">
-    <script src="/ainder/assets/profile.js" defer></script>
+    <link rel="stylesheet" href="/ainder/assets/app.css?v=<?= rawurlencode($cssVersion) ?>">
+    <script src="/ainder/assets/profile.js?v=<?= rawurlencode($scriptVersion) ?>" defer></script>
 </head>
 <body class="profile-page<?= $manualOpen ? ' manual-is-open' : '' ?>">
     <header class="profile-header">

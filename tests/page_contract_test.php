@@ -21,6 +21,13 @@ test('landing declares responsive hero, logo, and Google login', function () use
     expect_same(true, str_contains($source, 'aria-disabled="true"'));
 });
 
+test('landing stylesheet uses its file version', function () use ($root): void {
+    $source = file_get_contents($root.'/web/index.php');
+
+    expect_same(true, str_contains($source, 'app.css?v='));
+    expect_same(true, str_contains($source, 'filemtime'));
+});
+
 test('placeholder pages enforce separate session states', function () use ($root): void {
     $profile = file_get_contents($root.'/web/profile/index.php');
     $app = file_get_contents($root.'/web/app/index.php');

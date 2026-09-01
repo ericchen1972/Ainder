@@ -41,6 +41,14 @@ test('profile page leads with Agent message and manual action', function () use 
     expect_same(true, str_contains($source, 'aria-expanded'));
 });
 
+test('profile assets use file versions to avoid stale browser caches', function () use ($profileRoot): void {
+    $source = file_get_contents($profileRoot.'/web/profile/index.php');
+
+    expect_same(true, str_contains($source, 'app.css?v='));
+    expect_same(true, str_contains($source, 'profile.js?v='));
+    expect_same(true, str_contains($source, 'filemtime'));
+});
+
 test('profile form contains only approved personal fields', function () use ($profileRoot): void {
     $source = file_get_contents($profileRoot.'/web/profile/index.php');
 

@@ -14,6 +14,7 @@ if (isset($_SESSION['ainder_member_id'])) {
 
 $clientId = ainder_config()['google_client_id'];
 $loginFailed = ($_GET['login'] ?? '') === 'failed';
+$cssVersion = (string) filemtime(__DIR__.'/assets/app.css');
 ?>
 <!doctype html>
 <html lang="zh-Hant">
@@ -25,7 +26,7 @@ $loginFailed = ($_GET['login'] ?? '') === 'failed';
     <title>Ainder</title>
     <link rel="preload" href="/ainder/assets/ainder-hero-desktop.webp" as="image" media="(min-width: 721px)">
     <link rel="preload" href="/ainder/assets/ainder-hero-mobile.webp" as="image" media="(max-width: 720px)">
-    <link rel="stylesheet" href="/ainder/assets/app.css">
+    <link rel="stylesheet" href="/ainder/assets/app.css?v=<?= rawurlencode($cssVersion) ?>">
     <?php if ($clientId !== ''): ?>
         <script src="https://accounts.google.com/gsi/client" async defer></script>
     <?php endif; ?>
