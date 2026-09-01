@@ -21,7 +21,7 @@
 - Modify `tests/run.php`: load the candidate test suite.
 - Replace `web/app/index.php`: authenticated browse page and strict server-rendered public card markup.
 - Create `web/assets/browse.css`: desktop layout A, mobile layout, candidate/photo states, drag states, attribution, focus, and reduced motion.
-- Create `web/assets/browse-model.mjs`: pure wrap and gesture-direction functions.
+- Create `web/assets/browse-model.js`: pure wrap and gesture-direction functions.
 - Create `web/assets/browse.js`: DOM controller for cards, photos, gestures, keyboard, looping, fallback, and current candidate synchronization.
 - Create `tests/browse_model_test.mjs`: executable behavior tests for circular navigation and drag thresholds.
 - Modify `tests/page_contract_test.php`: authenticated page, asset versioning, public-field boundary, responsive layout, and no-Like contracts.
@@ -561,7 +561,7 @@ lean-ctx -c 'git commit -m "feat: add Ainder candidate repository"'
 ### Task 3: Circular Navigation Model
 
 **Files:**
-- Create: `web/assets/browse-model.mjs`
+- Create: `web/assets/browse-model.js`
 - Create: `tests/browse_model_test.mjs`
 
 - [ ] **Step 1: Write executable model tests**
@@ -575,7 +575,7 @@ import {
   wrapIndex,
   candidateStepForDrag,
   photoIndexAfterStep,
-} from '../web/assets/browse-model.mjs';
+} from '../web/assets/browse-model.js';
 
 test('candidate indices wrap at both ends', () => {
   assert.equal(wrapIndex(10, 10), 0);
@@ -603,11 +603,11 @@ Run:
 lean-ctx -c --raw node --test tests/browse_model_test.mjs
 ```
 
-Expected: FAIL with `ERR_MODULE_NOT_FOUND` for `browse-model.mjs`.
+Expected: FAIL with `ERR_MODULE_NOT_FOUND` for `browse-model.js`.
 
 - [ ] **Step 3: Implement the pure model**
 
-Create `web/assets/browse-model.mjs`:
+Create `web/assets/browse-model.js`:
 
 ```js
 export function wrapIndex(index, total) {
@@ -639,7 +639,7 @@ Expected: 3 tests pass.
 - [ ] **Step 5: Commit the model**
 
 ```bash
-lean-ctx -c 'git add web/assets/browse-model.mjs tests/browse_model_test.mjs'
+lean-ctx -c 'git add web/assets/browse-model.js tests/browse_model_test.mjs'
 lean-ctx -c 'git commit -m "feat: add circular browse model"'
 ```
 
@@ -667,7 +667,7 @@ test('authenticated app renders the approved public browse surface', function ()
         'data-candidate-id',
         'data-current-candidate-id',
         'browse.css?v=',
-        'browse-model.mjs?v=',
+        'browse-model.js?v=',
         'browse.js?v=',
         'aria-live',
         'Photo by',
@@ -763,7 +763,7 @@ Render semantic HTML with these exact structural contracts after the bootstrap:
     <meta name="theme-color" content="#0d0e13">
     <title>Ainder</title>
     <link rel="stylesheet" href="/ainder/assets/browse.css?v=<?= $assetVersion('/assets/browse.css') ?>">
-    <script type="importmap">{"imports":{"ainder-browse-model":"/ainder/assets/browse-model.mjs?v=<?= $assetVersion('/assets/browse-model.mjs') ?>"}}</script>
+    <script type="importmap">{"imports":{"ainder-browse-model":"/ainder/assets/browse-model.js?v=<?= $assetVersion('/assets/browse-model.js') ?>"}}</script>
     <script type="module" src="/ainder/assets/browse.js?v=<?= $assetVersion('/assets/browse.js') ?>"></script>
 </head>
 <body class="browse-page">
@@ -1277,7 +1277,7 @@ lean-ctx -c 'git commit -m "test: add Ainder browse deployment diagnostic"'
 ### Task 7: Deployment and Live Verification
 
 **Files:**
-- Deploy persistently: `web/lib/registration.php`, `web/lib/database.php`, `web/lib/demo.php`, `web/profile/index.php`, `web/profile/register.php`, `web/lib/candidates.php`, `web/app/index.php`, `web/assets/browse.css`, `web/assets/browse-model.mjs`, `web/assets/browse.js`
+- Deploy persistently: `web/lib/registration.php`, `web/lib/database.php`, `web/lib/demo.php`, `web/profile/index.php`, `web/profile/register.php`, `web/lib/candidates.php`, `web/app/index.php`, `web/assets/browse.css`, `web/assets/browse-model.js`, `web/assets/browse.js`
 - Deploy temporarily, then remove: `web/migrations/003_remove_basic_intro.php`, `web/diagnostics/browse_status.php`
 - Preserve: `/Volumes/sweety.tw/ainder/config.local.php`, `/Volumes/sweety.tw/ainder/uploads/`
 
@@ -1307,7 +1307,7 @@ cp web/profile/register.php /Volumes/sweety.tw/ainder/profile/register.php
 cp web/lib/candidates.php /Volumes/sweety.tw/ainder/lib/candidates.php
 cp web/app/index.php /Volumes/sweety.tw/ainder/app/index.php
 cp web/assets/browse.css /Volumes/sweety.tw/ainder/assets/browse.css
-cp web/assets/browse-model.mjs /Volumes/sweety.tw/ainder/assets/browse-model.mjs
+cp web/assets/browse-model.js /Volumes/sweety.tw/ainder/assets/browse-model.js
 cp web/assets/browse.js /Volumes/sweety.tw/ainder/assets/browse.js
 ```
 
@@ -1326,7 +1326,7 @@ shasum -a 256 web/profile/index.php /Volumes/sweety.tw/ainder/profile/index.php
 shasum -a 256 web/profile/register.php /Volumes/sweety.tw/ainder/profile/register.php
 shasum -a 256 web/app/index.php /Volumes/sweety.tw/ainder/app/index.php
 shasum -a 256 web/assets/browse.css /Volumes/sweety.tw/ainder/assets/browse.css
-shasum -a 256 web/assets/browse-model.mjs /Volumes/sweety.tw/ainder/assets/browse-model.mjs
+shasum -a 256 web/assets/browse-model.js /Volumes/sweety.tw/ainder/assets/browse-model.js
 shasum -a 256 web/assets/browse.js /Volumes/sweety.tw/ainder/assets/browse.js
 ```
 
@@ -1358,7 +1358,7 @@ Verify:
 GET /ainder/                         -> HTTP 200
 GET /ainder/app/ without session     -> HTTP 302 to /ainder/
 GET /ainder/assets/browse.css        -> HTTP 200
-GET /ainder/assets/browse-model.mjs  -> HTTP 200
+GET /ainder/assets/browse-model.js   -> HTTP 200
 GET /ainder/assets/browse.js         -> HTTP 200
 ```
 

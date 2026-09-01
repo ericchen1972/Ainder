@@ -1,10 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
+import { readFile } from 'node:fs/promises';
+
+const source = await readFile(
+  new URL('../web/assets/browse-model.js', import.meta.url),
+  'utf8',
+);
+const {
   wrapIndex,
   candidateStepForDrag,
   photoIndexAfterStep,
-} from '../web/assets/browse-model.mjs';
+} = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 
 test('candidate indices wrap at both ends', () => {
   assert.equal(wrapIndex(10, 10), 0);

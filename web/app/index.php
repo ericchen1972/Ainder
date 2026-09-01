@@ -61,7 +61,7 @@ $avatarPath = $avatarPath !== ''
     <meta name="theme-color" content="#0d0e13">
     <title>Ainder</title>
     <link rel="stylesheet" href="/ainder/assets/browse.css?v=<?= $assetVersion('/assets/browse.css') ?>">
-    <script type="importmap">{"imports":{"ainder-browse-model":"/ainder/assets/browse-model.mjs?v=<?= $assetVersion('/assets/browse-model.mjs') ?>"}}</script>
+    <script type="importmap">{"imports":{"ainder-browse-model":"/ainder/assets/browse-model.js?v=<?= $assetVersion('/assets/browse-model.js') ?>"}}</script>
     <script type="module" src="/ainder/assets/browse.js?v=<?= $assetVersion('/assets/browse.js') ?>"></script>
 </head>
 <body class="browse-page">

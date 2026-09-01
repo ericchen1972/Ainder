@@ -185,7 +185,7 @@ test('authenticated app renders the approved public browse surface', function ()
         'data-candidate-id',
         'data-current-candidate-id',
         'browse.css?v=',
-        'browse-model.mjs?v=',
+        'browse-model.js?v=',
         'browse.js?v=',
         'aria-live',
         'Photo by',
