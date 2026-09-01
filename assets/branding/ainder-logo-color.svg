@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="360" viewBox="0 0 1400 360" role="img" aria-labelledby="title">
+  <title id="title">Ainder</title>
+  <g transform="translate(42 28)">
+    <circle cx="92" cy="58" r="34" fill="#4A173F"/>
+    <circle cx="220" cy="58" r="34" fill="#C86F87"/>
+    <path d="M58 258C58 174 70 118 105 104C132 94 150 116 164 145C142 139 124 142 111 154C94 171 88 211 89 269Z" fill="#4A173F"/>
+    <path d="M254 258C254 174 242 118 207 104C180 94 162 116 148 145C170 139 188 142 201 154C218 171 224 211 223 269Z" fill="#C86F87"/>
+    <path d="M156 137L163 155L181 162L163 169L156 187L149 169L131 162L149 155Z" fill="#F06449"/>
+  </g>
+  <text x="375" y="258" fill="#4A173F" font-family="Georgia, 'Times New Roman', serif" font-size="214" letter-spacing="-8">Ainder</text>
+</svg>

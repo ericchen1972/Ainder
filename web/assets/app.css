@@ -1,0 +1,152 @@
+:root {
+    color-scheme: dark;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #111319;
+    color: #f7f5f2;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+    margin: 0;
+    background: #111319;
+    color: #f7f5f2;
+}
+
+.landing {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
+}
+
+.hero,
+.hero img,
+.shade {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hero img {
+    object-fit: cover;
+    object-position: center;
+}
+
+.shade {
+    background:
+        linear-gradient(180deg, rgba(8, 9, 13, 0.58), transparent 30%),
+        linear-gradient(90deg, rgba(8, 9, 13, 0.12), transparent 38%);
+    pointer-events: none;
+}
+
+.corner-bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(1rem, 2.3vw, 2rem);
+}
+
+.logo {
+    display: block;
+    width: clamp(132px, 13vw, 210px);
+    height: auto;
+    filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.28));
+}
+
+.login-area {
+    min-width: 190px;
+    min-height: 44px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.login-unavailable {
+    padding: 0.72rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    background: rgba(15, 17, 22, 0.74);
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.86rem;
+    backdrop-filter: blur(12px);
+}
+
+.login-error {
+    position: fixed;
+    z-index: 2;
+    top: 5.5rem;
+    right: clamp(1rem, 2.3vw, 2rem);
+    margin: 0;
+    padding: 0.72rem 1rem;
+    border: 1px solid rgba(255, 130, 130, 0.32);
+    border-radius: 12px;
+    background: rgba(53, 19, 24, 0.82);
+    font-size: 0.9rem;
+    backdrop-filter: blur(12px);
+}
+
+.placeholder {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    background: radial-gradient(circle at top, #262936, #111319 58%);
+}
+
+.placeholder-content {
+    text-align: center;
+}
+
+.placeholder-content img {
+    width: 160px;
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+.placeholder-content h1 {
+    margin: 0;
+    font-size: clamp(1.65rem, 4vw, 2.4rem);
+}
+
+.placeholder-content p {
+    margin: 0.8rem 0 0;
+    color: #aaaeb8;
+}
+
+@media (max-width: 720px) {
+    .hero img {
+        object-position: center top;
+    }
+
+    .shade {
+        background: linear-gradient(180deg, rgba(8, 9, 13, 0.6), transparent 28%);
+    }
+
+    .corner-bar {
+        align-items: center;
+        padding: 1rem;
+    }
+
+    .logo {
+        width: 124px;
+    }
+
+    .login-area {
+        min-width: 162px;
+        transform: scale(0.9);
+        transform-origin: right center;
+    }
+
+    .login-error {
+        top: 4.8rem;
+        right: 1rem;
+    }
+}
