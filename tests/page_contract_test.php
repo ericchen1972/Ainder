@@ -358,6 +358,10 @@ test('mobile navigation keeps Agent Likes and Messages visible', function () use
     ] as $needle) {
         expect_same(true, str_contains($style, $needle));
     }
+    expect_same(true, str_contains(
+        $style,
+        ".mobile-bar,\n    .mobile-tabs { width: 100%; }"
+    ));
 });
 
 test('browse diagnostic is token protected and aggregate only', function () use ($root): void {

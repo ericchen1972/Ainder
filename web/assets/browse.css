@@ -309,6 +309,8 @@ a { font: inherit; }
     .candidate-browser { display: block; }
     .browse-sidebar { display: none; }
     .browse-stage { min-height: 100dvh; display: block; padding: 0; background: #0b0c11; }
+    .mobile-bar,
+    .mobile-tabs { width: 100%; }
     .mobile-bar {
         position: relative;
         z-index: 10;
