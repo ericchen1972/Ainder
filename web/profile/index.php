@@ -39,9 +39,11 @@ function ainder_field_error(array $errors, string $field): string
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111319">
+    <meta name="ainder-csrf-token" content="<?= htmlspecialchars(ainder_form_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
     <title>建立 Ainder 帳號</title>
     <link rel="stylesheet" href="/ainder/assets/app.css?v=<?= rawurlencode($cssVersion) ?>">
     <script src="/ainder/assets/profile.js?v=<?= rawurlencode($scriptVersion) ?>" defer></script>
+    <script type="module" src="/ainder/assets/webmcp-registration.js?v=<?= rawurlencode((string) filemtime($assetRoot.'/webmcp-registration.js')) ?>"></script>
 </head>
 <body class="profile-page<?= $manualOpen ? ' manual-is-open' : '' ?>">
     <header class="profile-header">
