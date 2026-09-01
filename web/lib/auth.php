@@ -54,6 +54,17 @@ function ainder_login_destination(?array $member): string
         : '/ainder/profile/';
 }
 
+function ainder_home_destination(array $session, int $now): ?string
+{
+    if (isset($session['ainder_member_id'])) {
+        return '/ainder/app/';
+    }
+
+    return ainder_pending_identity_is_valid($session, $now)
+        ? '/ainder/profile/'
+        : null;
+}
+
 function ainder_pending_identity_is_valid(array $session, int $now): bool
 {
     return isset(

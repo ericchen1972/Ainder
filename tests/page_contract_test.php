@@ -19,6 +19,7 @@ test('landing declares responsive hero, logo, and Google login', function () use
 
     expect_same(true, str_contains($source, 'Sign in with Google'));
     expect_same(true, str_contains($source, 'aria-disabled="true"'));
+    expect_same(true, str_contains($source, 'ainder_home_destination'));
 });
 
 test('landing stylesheet uses its file version', function () use ($root): void {

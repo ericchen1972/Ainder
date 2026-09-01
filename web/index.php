@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
+require_once __DIR__.'/lib/auth.php';
 require_once __DIR__.'/lib/config.php';
 require_once __DIR__.'/lib/session.php';
 
 ainder_start_session();
 
-if (isset($_SESSION['ainder_member_id'])) {
-    header('Location: /ainder/app/');
+$destination = ainder_home_destination($_SESSION, time());
+if ($destination !== null) {
+    header('Location: '.$destination);
     exit;
 }
 

@@ -68,6 +68,26 @@ test('pending identity expires at thirty minutes', function (): void {
     expect_same(false, ainder_pending_identity_is_valid($session, 2000));
 });
 
+test('home destination follows active and pending session state', function (): void {
+    expect_same('/ainder/app/', ainder_home_destination([
+        'ainder_member_id' => 42,
+    ], 1000));
+    expect_same('/ainder/app/', ainder_home_destination([
+        'ainder_member_id' => 42,
+        'ainder_pending_identity' => ['google_sub' => 'google-123'],
+        'ainder_pending_expires_at' => 1001,
+    ], 1000));
+    expect_same('/ainder/profile/', ainder_home_destination([
+        'ainder_pending_identity' => ['google_sub' => 'google-123'],
+        'ainder_pending_expires_at' => 1001,
+    ], 1000));
+    expect_same(null, ainder_home_destination([
+        'ainder_pending_identity' => ['google_sub' => 'google-123'],
+        'ainder_pending_expires_at' => 1000,
+    ], 1000));
+    expect_same(null, ainder_home_destination([], 1000));
+});
+
 test('configuration fixes the database name to ainder', function (): void {
     $source = file_get_contents(dirname(__DIR__).'/web/lib/config.php');
 
