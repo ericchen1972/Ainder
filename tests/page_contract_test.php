@@ -52,3 +52,26 @@ test('landing has no navbar and prevents horizontal overflow', function () use (
     expect_same(false, str_contains(strtolower($page), '<nav'));
     expect_same(true, str_contains($css, 'overflow: hidden'));
 });
+
+test('migration creates only Ainder database and users table', function () use ($root): void {
+    $source = file_get_contents(
+        $root.'/web/migrations/001_create_ainder.php'
+    );
+
+    expect_same(
+        true,
+        str_contains($source, 'CREATE DATABASE IF NOT EXISTS ainder')
+    );
+    expect_same(
+        true,
+        str_contains($source, 'CREATE TABLE IF NOT EXISTS users')
+    );
+    expect_same(
+        true,
+        str_contains($source, 'UNIQUE KEY users_google_sub_unique')
+    );
+    expect_same(
+        false,
+        preg_match('/(?:INSERT|USE)\s+sweety/i', $source) === 1
+    );
+});
