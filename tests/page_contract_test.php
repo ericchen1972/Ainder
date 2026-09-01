@@ -189,6 +189,22 @@ test('fourth migration creates Agent workflow tables', function () use ($root): 
     }
 });
 
+test('fifth migration adds legacy-compatible Agent opinions to Likes', function () use ($root): void {
+    $source = file_get_contents(
+        $root.'/web/migrations/005_add_like_opinions.php'
+    );
+
+    foreach ([
+        'information_schema.COLUMNS',
+        'likes',
+        'agent_opinion',
+        'TEXT NULL',
+        'migration_token',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+});
+
 test('signed uploads require an untracked signing key and public base URL', function () use ($root): void {
     $config = file_get_contents($root.'/web/lib/config.php');
     $example = file_get_contents($root.'/web/config.local.example.php');
@@ -323,7 +339,8 @@ test('browse assets implement gestures looping and responsive layout', function 
         expect_same(true, str_contains($style, $needle));
     }
 
-    expect_same(false, preg_match('/like|heart|super.?like/i', $script) === 1);
+    expect_same(false, str_contains($script, 'send_like_to_current_candidate'));
+    expect_same(false, str_contains($script, 'like-button'));
 });
 
 test('mobile member avatar remains square and does not inherit logo sizing', function () use ($root): void {
@@ -362,6 +379,31 @@ test('mobile navigation keeps Agent Likes and Messages visible', function () use
         $style,
         ".mobile-bar,\n    .mobile-tabs { width: 100%; }"
     ));
+});
+
+test('desktop Agent Likes renders actionable pending Like rows', function () use ($root): void {
+    $page = file_get_contents($root.'/web/app/index.php');
+    $script = file_get_contents($root.'/web/assets/browse.js');
+    $style = file_get_contents($root.'/web/assets/browse.css');
+
+    foreach ([
+        'ainder_list_incoming_likes',
+        'agent-like-list',
+        'agent-like-target',
+        'agent-like-remove',
+        'data-like-id',
+        'data-candidate-id',
+        'agent-like-age',
+    ] as $needle) {
+        expect_same(true, str_contains($page.$style, $needle));
+    }
+    foreach ([
+        'showCandidate',
+        '/ainder/api/likes/remove.php',
+        'removeIncomingLike',
+    ] as $needle) {
+        expect_same(true, str_contains($script, $needle));
+    }
 });
 
 test('browse diagnostic is token protected and aggregate only', function () use ($root): void {

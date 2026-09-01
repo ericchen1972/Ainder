@@ -28,6 +28,7 @@ try {
         $memberId,
         (int) ($body['candidate_id'] ?? 0),
         (string) ($body['evaluation_token'] ?? ''),
+        (string) ($body['opinion'] ?? ''),
         new DateTimeImmutable('now')
     );
     ainder_json_success($result);

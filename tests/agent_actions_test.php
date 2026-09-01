@@ -16,6 +16,42 @@ test('match pairs have stable low and high order', function (): void {
     expect_same([4, 19], ainder_match_pair(4, 19));
 });
 
+test('Agent Like opinion is trimmed and cannot be empty', function (): void {
+    expect_same(
+        'Chloe sees Eric as thoughtful and direct.',
+        ainder_normalize_agent_opinion(
+            '  Chloe sees Eric as thoughtful and direct.  '
+        )
+    );
+
+    foreach (['', " \n\t"] as $empty) {
+        try {
+            ainder_normalize_agent_opinion($empty);
+            throw new RuntimeException('Empty opinion was accepted.');
+        } catch (InvalidArgumentException $error) {
+            expect_same('AGENT_OPINION_REQUIRED', $error->getMessage());
+        }
+    }
+});
+
+test('Like API stores opinion and pending incoming Like can be removed', function (): void {
+    $root = dirname(__DIR__);
+    $like = file_get_contents($root.'/web/api/candidates/like.php');
+    $remove = file_get_contents($root.'/web/api/likes/remove.php');
+    $actions = file_get_contents($root.'/web/lib/agent_actions.php');
+
+    expect_same(true, str_contains($like, "body['opinion']"));
+    expect_same(true, str_contains($actions, 'agent_opinion'));
+    foreach ([
+        'DELETE FROM likes',
+        'recipient_user_id',
+        'LIKE_NOT_FOUND',
+        'RECIPROCAL_LIKE_EXISTS',
+    ] as $needle) {
+        expect_same(true, str_contains($remove, $needle));
+    }
+});
+
 test('evaluation and Like endpoints expose Profile errors', function (): void {
     $root = dirname(__DIR__);
     foreach (['evaluate.php', 'like.php'] as $file) {

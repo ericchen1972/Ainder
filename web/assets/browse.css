@@ -101,6 +101,81 @@ a { font: inherit; }
 .sidebar-empty h2 { margin: 18px 0 8px; color: #fff; font-size: 18px; }
 .sidebar-empty p { margin: 0; line-height: 1.55; }
 
+.agent-like-list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 10px;
+    list-style: none;
+}
+
+.agent-like-row {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    border-radius: 12px;
+}
+
+.agent-like-row:hover { background: rgba(255,255,255,.055); }
+
+.agent-like-target {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border: 0;
+    background: none;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.agent-like-target img {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.agent-like-name {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.agent-like-age {
+    color: #9a9daa;
+    font-size: 11px;
+}
+
+.agent-like-remove {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    margin-right: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #777a87;
+    cursor: pointer;
+}
+
+.agent-like-remove:hover { background: rgba(255,255,255,.08); color: #fff; }
+.agent-like-remove svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+.agent-like-target:focus-visible,
+.agent-like-remove:focus-visible { outline: 3px solid #ff83a9; outline-offset: 2px; }
+.agent-like-list[hidden],
+.sidebar-empty[hidden] { display: none; }
+
 .agent-symbol {
     width: 72px;
     height: 72px;

@@ -27,10 +27,17 @@ try {
         exit;
     }
 
+    $now = new DateTimeImmutable('now');
     $candidates = ainder_list_browse_candidates(
         $database,
+        (int) $member['id'],
         (string) $member['gender'],
-        new DateTimeImmutable('now')
+        $now
+    );
+    $incomingLikes = ainder_list_incoming_likes(
+        $database,
+        (int) $member['id'],
+        $now
     );
 } catch (Throwable) {
     http_response_code(503);
@@ -82,7 +89,45 @@ $avatarPath = $avatarPath !== ''
             <button type="button" role="tab" aria-selected="true">Agent Likes</button>
             <button type="button" role="tab" aria-selected="false">Messages</button>
         </div>
-        <div class="sidebar-empty">
+        <?php if ($incomingLikes !== []): ?>
+            <ul class="agent-like-list" aria-label="Pending Agent Likes">
+                <?php foreach ($incomingLikes as $incomingLike): ?>
+                    <li
+                        class="agent-like-row"
+                        data-like-id="<?= (int) $incomingLike['like_id'] ?>"
+                        data-candidate-id="<?= (int) $incomingLike['candidate_id'] ?>"
+                    >
+                        <button
+                            class="agent-like-target"
+                            type="button"
+                            data-candidate-id="<?= (int) $incomingLike['candidate_id'] ?>"
+                        >
+                            <img
+                                src="<?= $escape($incomingLike['photo_path']) ?>"
+                                alt=""
+                            >
+                            <span class="agent-like-name">
+                                <?= $escape($incomingLike['display_name']) ?>
+                            </span>
+                            <span class="agent-like-age">
+                                <?= (int) $incomingLike['age'] ?>
+                            </span>
+                        </button>
+                        <button
+                            class="agent-like-remove"
+                            type="button"
+                            data-like-id="<?= (int) $incomingLike['like_id'] ?>"
+                            aria-label="Remove <?= $escape($incomingLike['display_name']) ?> Like"
+                        >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 6l12 12M18 6L6 18"></path>
+                            </svg>
+                        </button>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+        <div class="sidebar-empty"<?= $incomingLikes !== [] ? ' hidden' : '' ?>>
             <span class="agent-symbol" aria-hidden="true">✦</span>
             <h2>Your Agent handles Likes</h2>
             <p>Browse freely. Swiping never sends a Like.</p>

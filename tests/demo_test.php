@@ -170,3 +170,21 @@ test('Demo seed endpoint is token protected and transactional', function (): voi
         expect_same(true, str_contains($source, $needle));
     }
 });
+
+test('inbound demo Like seed is protected and preserves one-way state', function (): void {
+    $source = file_get_contents(
+        dirname(__DIR__).'/web/seeds/run_demo_inbound_like.php'
+    );
+
+    foreach ([
+        'migration_token',
+        'hash_equals',
+        'sender_display_name',
+        'recipient_display_name',
+        'agent_opinion',
+        'RECIPROCAL_LIKE_EXISTS',
+        'is_demo',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+});

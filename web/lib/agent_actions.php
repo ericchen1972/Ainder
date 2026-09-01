@@ -14,6 +14,19 @@ function ainder_evaluation_token_hash(string $token): string
     return hash('sha256', $token);
 }
 
+function ainder_normalize_agent_opinion(string $opinion): string
+{
+    $normalized = trim($opinion);
+    if ($normalized === '') {
+        throw new InvalidArgumentException('AGENT_OPINION_REQUIRED');
+    }
+    if (mb_strlen($normalized) > 1000) {
+        throw new InvalidArgumentException('AGENT_OPINION_INVALID');
+    }
+
+    return $normalized;
+}
+
 function ainder_match_pair(int $firstUserId, int $secondUserId): array
 {
     return [min($firstUserId, $secondUserId), max($firstUserId, $secondUserId)];
@@ -121,11 +134,13 @@ function ainder_send_agent_like(
     int $requesterId,
     int $candidateId,
     string $token,
+    string $opinion,
     DateTimeImmutable $now
 ): array {
     if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
         throw new InvalidArgumentException('EVALUATION_TOKEN_INVALID');
     }
+    $agentOpinion = ainder_normalize_agent_opinion($opinion);
     $database->begin_transaction();
     try {
         [$requester, $candidate] = ainder_require_action_members(
@@ -160,10 +175,12 @@ function ainder_send_agent_like(
         }
 
         $like = $database->prepare(
-            'INSERT INTO likes (sender_user_id, recipient_user_id) '
-            .'VALUES (?, ?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)'
+            'INSERT INTO likes '
+            .'(sender_user_id, recipient_user_id, agent_opinion) '
+            .'VALUES (?, ?, ?) '
+            .'ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)'
         );
-        $like->bind_param('ii', $requesterId, $candidateId);
+        $like->bind_param('iis', $requesterId, $candidateId, $agentOpinion);
         $like->execute();
         $consume = $database->prepare(
             'UPDATE candidate_evaluations SET consumed_at = ? WHERE id = ?'

@@ -98,6 +98,7 @@ function ainder_candidate_cards_from_rows(
 
 function ainder_list_browse_candidates(
     mysqli $database,
+    int $viewerMemberId,
     string $viewerGender,
     DateTimeImmutable $now
 ): array {
@@ -108,13 +109,64 @@ function ainder_list_browse_candidates(
         .'p.photographer_url, p.source_page_url '
         .'FROM users u INNER JOIN user_photos p ON p.user_id = u.id '
         ."WHERE u.status = 'active' AND u.gender = ? "
+        .'AND NOT EXISTS (SELECT 1 FROM likes sent_like '
+        .'WHERE sent_like.sender_user_id = ? '
+        .'AND sent_like.recipient_user_id = u.id) '
         .'ORDER BY u.id, p.sort_order'
     );
-    $statement->bind_param('s', $candidateGender);
+    $statement->bind_param('si', $candidateGender, $viewerMemberId);
     $statement->execute();
     $rows = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
     $cards = ainder_candidate_cards_from_rows($rows, $now);
     shuffle($cards);
 
     return $cards;
+}
+
+function ainder_list_incoming_likes(
+    mysqli $database,
+    int $recipientMemberId,
+    DateTimeImmutable $now
+): array {
+    $statement = $database->prepare(
+        'SELECT l.id AS like_id, l.agent_opinion, '
+        .'u.id AS candidate_id, u.display_name, u.birth_date, '
+        .'p.file_path AS photo_path '
+        .'FROM likes l INNER JOIN users u ON u.id = l.sender_user_id '
+        .'INNER JOIN user_photos p ON p.user_id = u.id AND p.sort_order = 1 '
+        ."WHERE l.recipient_user_id = ? AND u.status = 'active' "
+        .'AND l.agent_opinion IS NOT NULL '
+        ."AND TRIM(l.agent_opinion) <> '' "
+        .'AND NOT EXISTS (SELECT 1 FROM likes reciprocal '
+        .'WHERE reciprocal.sender_user_id = l.recipient_user_id '
+        .'AND reciprocal.recipient_user_id = l.sender_user_id) '
+        .'ORDER BY l.created_at DESC, l.id DESC'
+    );
+    $statement->bind_param('i', $recipientMemberId);
+    $statement->execute();
+
+    $likes = [];
+    foreach ($statement->get_result()->fetch_all(MYSQLI_ASSOC) as $row) {
+        $birthDate = DateTimeImmutable::createFromFormat(
+            '!Y-m-d',
+            (string) ($row['birth_date'] ?? '')
+        );
+        $age = $birthDate ? $birthDate->diff($now)->y : 0;
+        $name = trim((string) ($row['display_name'] ?? ''));
+        $photoPath = trim((string) ($row['photo_path'] ?? ''));
+        if ($name === '' || $age < 18 || $photoPath === '') {
+            continue;
+        }
+
+        $likes[] = [
+            'like_id' => (int) $row['like_id'],
+            'candidate_id' => (int) $row['candidate_id'],
+            'display_name' => $name,
+            'age' => $age,
+            'photo_path' => $photoPath,
+            'agent_opinion' => trim((string) $row['agent_opinion']),
+        ];
+    }
+
+    return $likes;
 }

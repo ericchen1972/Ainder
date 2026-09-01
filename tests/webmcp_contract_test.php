@@ -95,4 +95,13 @@ test('browse tools bind evaluation and Like to the current card', function () us
     expect_same(true, str_contains($tools, 'currentCandidateId()'));
     expect_same(true, str_contains($tools, '/api/candidates/evaluate.php'));
     expect_same(true, str_contains($tools, '/api/candidates/like.php'));
+    foreach ([
+        'opinion',
+        'maxLength: 1000',
+        "required: ['evaluation_token', 'opinion']",
+        'Reuse the opinion already given',
+        'removeCandidate',
+    ] as $needle) {
+        expect_same(true, str_contains($tools, $needle));
+    }
 });

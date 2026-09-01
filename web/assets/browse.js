@@ -4,10 +4,11 @@ import {
   photoIndexAfterStep,
   isPhotoControlTarget,
 } from 'ainder-browse-model';
+import { postJson } from './webmcp-common.js';
 
 const browser = document.querySelector('.candidate-browser');
 const stack = document.querySelector('.candidate-stack');
-const cards = [...document.querySelectorAll('.candidate-card')];
+let cards = [...document.querySelectorAll('.candidate-card')];
 const status = document.querySelector('[data-candidate-status]');
 let candidateIndex = 0;
 let pointerStart = null;
@@ -105,6 +106,59 @@ function browseCandidates(direction) {
   return candidateSnapshot();
 }
 
+function showCandidate(candidateId) {
+  const index = cards.findIndex((card) => (
+    Number(card.dataset.candidateId) === Number(candidateId)
+  ));
+  if (index < 0) return null;
+
+  setCurrentCandidate(index, 0);
+  return candidateSnapshot();
+}
+
+function updateIncomingLikeEmptyState() {
+  const list = document.querySelector('.agent-like-list');
+  const empty = document.querySelector('.sidebar-empty');
+  const hasRows = Boolean(list?.querySelector('.agent-like-row'));
+  if (list) list.hidden = !hasRows;
+  if (empty) empty.hidden = hasRows;
+}
+
+function removeIncomingLike(likeId) {
+  document.querySelector(
+    `.agent-like-row[data-like-id="${Number(likeId)}"]`,
+  )?.remove();
+  updateIncomingLikeEmptyState();
+}
+
+function removeCandidate(candidateId) {
+  const id = Number(candidateId);
+  const index = cards.findIndex((card) => Number(card.dataset.candidateId) === id);
+  if (index < 0) return candidateSnapshot();
+
+  const wasCurrent = index === candidateIndex;
+  cards[index].remove();
+  cards.splice(index, 1);
+  document.querySelectorAll(
+    `.agent-like-row[data-candidate-id="${id}"]`,
+  ).forEach((row) => row.remove());
+  updateIncomingLikeEmptyState();
+
+  if (cards.length === 0) {
+    candidateIndex = 0;
+    stack?.setAttribute('hidden', '');
+    browser?.setAttribute('data-current-candidate-id', '');
+    document.documentElement.setAttribute('data-current-candidate-id', '');
+    if (status) status.textContent = 'No more candidates.';
+    return null;
+  }
+
+  if (index < candidateIndex) candidateIndex -= 1;
+  if (candidateIndex >= cards.length) candidateIndex = 0;
+  setCurrentCandidate(candidateIndex, wasCurrent ? 80 : 0);
+  return candidateSnapshot();
+}
+
 function changeCandidatePhoto(direction) {
   const card = currentCard();
   if (!card) return null;
@@ -161,6 +215,30 @@ cards.forEach((card) => {
   });
 });
 
+document.querySelectorAll('.agent-like-target').forEach((target) => {
+  target.addEventListener('click', () => {
+    showCandidate(Number(target.dataset.candidateId));
+  });
+});
+
+document.querySelectorAll('.agent-like-remove').forEach((button) => {
+  button.addEventListener('click', async () => {
+    const likeId = Number(button.dataset.likeId);
+    if (!Number.isInteger(likeId) || likeId < 1) return;
+
+    button.disabled = true;
+    const result = await postJson('/ainder/api/likes/remove.php', {
+      like_id: likeId,
+    });
+    if (result.ok) {
+      removeIncomingLike(likeId);
+      return;
+    }
+    button.disabled = false;
+    if (status) status.textContent = result.error?.message ?? 'Like was not removed.';
+  });
+});
+
 stack?.addEventListener('pointerdown', (event) => {
   if (isPhotoControlTarget(event.target)) return;
 
@@ -211,4 +289,7 @@ globalThis.ainderBrowseController = Object.freeze({
   getCurrentCandidate: () => candidateSnapshot(),
   browseCandidates,
   changeCandidatePhoto,
+  showCandidate,
+  removeCandidate,
+  removeIncomingLike,
 });

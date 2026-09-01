@@ -134,7 +134,7 @@ if (typeof context?.registerTool === 'function') {
 
   await context.registerTool({
     name: 'send_like_to_current_candidate',
-    description: 'Send an Ainder Like to the current candidate only after the user asks for it. Requires a fresh evaluation token and repeats all Profile checks.',
+    description: 'Send an Ainder Like to the current candidate only after the user asks for it. Requires a fresh evaluation token and a non-empty Agent opinion. Reuse the opinion already given to the user about this candidate. If no opinion has been given, evaluate the candidate and generate a concise opinion before calling this tool. Never submit an empty opinion.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -142,11 +142,16 @@ if (typeof context?.registerTool === 'function') {
           type: 'string',
           pattern: '^[a-f0-9]{64}$',
         },
+        opinion: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 1000,
+        },
       },
-      required: ['evaluation_token'],
+      required: ['evaluation_token', 'opinion'],
       additionalProperties: false,
     },
-    execute: (input) => {
+    execute: async (input) => {
       const candidateId = currentCandidateId();
       if (!candidateId) {
         return {
@@ -157,10 +162,15 @@ if (typeof context?.registerTool === 'function') {
           },
         };
       }
-      return postJson('/ainder/api/candidates/like.php', {
+      const result = await postJson('/ainder/api/candidates/like.php', {
         candidate_id: candidateId,
         evaluation_token: input.evaluation_token,
+        opinion: input.opinion,
       });
+      if (result.ok) {
+        browseController()?.removeCandidate(candidateId);
+      }
+      return result;
     },
   });
 }

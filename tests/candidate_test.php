@@ -4,6 +4,22 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__).'/web/lib/candidates.php';
 
+test('browse query excludes candidates already Liked by the viewer', function (): void {
+    $source = file_get_contents(dirname(__DIR__).'/web/lib/candidates.php');
+
+    foreach ([
+        'int $viewerMemberId',
+        'NOT EXISTS',
+        'sender_user_id = ?',
+        'recipient_user_id = u.id',
+        'ainder_list_incoming_likes',
+        'reciprocal',
+        'agent_opinion',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+});
+
 test('candidate gender is always opposite the viewer', function (): void {
     expect_same('female', ainder_candidate_gender('male'));
     expect_same('male', ainder_candidate_gender('female'));
