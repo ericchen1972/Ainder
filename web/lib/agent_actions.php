@@ -191,29 +191,32 @@ function ainder_send_agent_like(
         $consume->execute();
 
         $matched = false;
-        if ((int) $requester['is_demo'] !== 1
-            && (int) $candidate['is_demo'] !== 1) {
-            $reciprocal = $database->prepare(
-                'SELECT id FROM likes WHERE sender_user_id = ? '
-                .'AND recipient_user_id = ? LIMIT 1'
+        $matchId = null;
+        $reciprocal = $database->prepare(
+            'SELECT id FROM likes WHERE sender_user_id = ? '
+            .'AND recipient_user_id = ? LIMIT 1'
+        );
+        $reciprocal->bind_param('ii', $candidateId, $requesterId);
+        $reciprocal->execute();
+        if ($reciprocal->get_result()->fetch_assoc() !== null) {
+            [$lowId, $highId] = ainder_match_pair($requesterId, $candidateId);
+            $match = $database->prepare(
+                'INSERT INTO matches (user_low_id, user_high_id) '
+                .'VALUES (?, ?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)'
             );
-            $reciprocal->bind_param('ii', $candidateId, $requesterId);
-            $reciprocal->execute();
-            if ($reciprocal->get_result()->fetch_assoc() !== null) {
-                [$lowId, $highId] = ainder_match_pair($requesterId, $candidateId);
-                $match = $database->prepare(
-                    'INSERT INTO matches (user_low_id, user_high_id) '
-                    .'VALUES (?, ?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)'
-                );
-                $match->bind_param('ii', $lowId, $highId);
-                $match->execute();
-                $matched = true;
-            }
+            $match->bind_param('ii', $lowId, $highId);
+            $match->execute();
+            $matched = true;
+            $matchId = (int) $database->insert_id;
         }
 
         $database->commit();
 
-        return ['liked' => true, 'matched' => $matched];
+        return [
+            'liked' => true,
+            'matched' => $matched,
+            'match_id' => $matchId,
+        ];
     } catch (Throwable $error) {
         $database->rollback();
         throw $error;

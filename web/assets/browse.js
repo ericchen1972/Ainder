@@ -10,6 +10,12 @@ const browser = document.querySelector('.candidate-browser');
 const stack = document.querySelector('.candidate-stack');
 let cards = [...document.querySelectorAll('.candidate-card')];
 const status = document.querySelector('[data-candidate-status]');
+const browseContent = document.querySelector('.browse-content');
+const messageView = document.querySelector('.message-view');
+const messageThread = document.querySelector('.message-thread');
+const messageComposer = document.querySelector('.message-composer');
+const messageInput = messageComposer?.querySelector('input[name="message"]');
+const opinionModal = document.querySelector('.opinion-modal');
 let candidateIndex = 0;
 let pointerStart = null;
 let pointerDelta = 0;
@@ -122,6 +128,60 @@ function updateIncomingLikeEmptyState() {
   const hasRows = Boolean(list?.querySelector('.agent-like-row'));
   if (list) list.hidden = !hasRows;
   if (empty) empty.hidden = hasRows;
+}
+
+function setActiveTab(tab) {
+  document.querySelectorAll('[data-tab]').forEach((button) => {
+    button.setAttribute('aria-selected', String(button.dataset.tab === tab));
+  });
+  document.querySelectorAll('[data-panel]').forEach((panel) => {
+    panel.hidden = panel.dataset.panel !== tab;
+  });
+}
+
+function renderMessages(messages) {
+  if (!messageThread) return;
+  messageThread.replaceChildren();
+  messages.forEach((message) => {
+    const bubble = document.createElement('p');
+    bubble.className = `message-bubble${message.is_mine ? ' is-mine' : ''}`;
+    bubble.dataset.messageId = String(message.id ?? '');
+    bubble.textContent = message.body;
+    messageThread.append(bubble);
+  });
+  messageThread.scrollTop = messageThread.scrollHeight;
+}
+
+async function openMessageView(matchId, name, age) {
+  const id = Number(matchId);
+  if (!messageView || !Number.isInteger(id) || id < 1) return;
+
+  setActiveTab('messages');
+  browseContent?.setAttribute('hidden', '');
+  messageView.hidden = false;
+  messageView.dataset.matchId = String(id);
+  const nameTarget = messageView.querySelector('[data-message-name]');
+  const ageTarget = messageView.querySelector('[data-message-age]');
+  if (nameTarget) nameTarget.textContent = name;
+  if (ageTarget) ageTarget.textContent = String(age);
+  window.history.replaceState({}, '', `/ainder/app/?view=messages&match=${id}`);
+
+  const result = await postJson('/ainder/api/messages/list.php', { match_id: id });
+  if (result.ok) renderMessages(result.messages ?? []);
+}
+
+function closeMessageView() {
+  if (messageView) messageView.hidden = true;
+  browseContent?.removeAttribute('hidden');
+  window.history.replaceState({}, '', '/ainder/app/');
+}
+
+function insertEmoji(emoji) {
+  if (!messageInput) return;
+  const start = messageInput.selectionStart ?? messageInput.value.length;
+  const end = messageInput.selectionEnd ?? start;
+  messageInput.setRangeText(emoji, start, end, 'end');
+  messageInput.focus();
 }
 
 function removeIncomingLike(likeId) {
@@ -239,6 +299,94 @@ document.querySelectorAll('.agent-like-remove').forEach((button) => {
   });
 });
 
+document.querySelectorAll('[data-tab]').forEach((button) => {
+  button.addEventListener('click', () => {
+    setActiveTab(button.dataset.tab);
+    if (button.dataset.tab === 'agent-likes') closeMessageView();
+  });
+});
+
+document.querySelectorAll('.match-card').forEach((card) => {
+  const open = () => openMessageView(
+    Number(card.dataset.matchId),
+    card.dataset.name ?? '',
+    card.dataset.age ?? '',
+  );
+  card.addEventListener('click', (event) => {
+    if (event.target.closest('.match-card-opinion, .match-card-close')) return;
+    open();
+  });
+  card.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    open();
+  });
+  card.querySelector('.match-card-opinion')?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const fullOpinion = opinionModal?.querySelector('[data-full-opinion]');
+    if (fullOpinion) fullOpinion.textContent = event.currentTarget.dataset.opinion ?? '';
+    opinionModal?.showModal();
+  });
+  card.querySelector('.match-card-close')?.addEventListener('click', async (event) => {
+    event.stopPropagation();
+    const confirmed = window.confirm(
+      'Cancel this Match and delete both Like records?',
+    );
+    if (!confirmed) return;
+    const result = await postJson('/ainder/api/matches/unmatch.php', {
+      match_id: Number(card.dataset.matchId),
+    });
+    if (result.ok) window.location.assign('/ainder/app/');
+  });
+});
+
+document.querySelector('.opinion-modal-close')?.addEventListener('click', () => {
+  opinionModal?.close();
+});
+
+document.querySelector('.message-back')?.addEventListener('click', closeMessageView);
+
+document.querySelector('.emoji-toggle')?.addEventListener('click', (event) => {
+  const list = document.querySelector('.emoji-list');
+  if (!list) return;
+  list.hidden = !list.hidden;
+  event.currentTarget.setAttribute('aria-expanded', String(!list.hidden));
+});
+
+document.querySelectorAll('[data-emoji]').forEach((button) => {
+  button.addEventListener('click', () => {
+    insertEmoji(button.dataset.emoji ?? '');
+    document.querySelector('.emoji-list')?.setAttribute('hidden', '');
+    document.querySelector('.emoji-toggle')?.setAttribute('aria-expanded', 'false');
+  });
+});
+
+messageComposer?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const matchId = Number(messageView?.dataset.matchId);
+  const message = messageInput?.value ?? '';
+  if (!Number.isInteger(matchId) || matchId < 1 || message.trim() === '') return;
+
+  const submit = messageComposer.querySelector('.message-send');
+  submit.disabled = true;
+  const result = await postJson('/ainder/api/messages/send.php', {
+    match_id: matchId,
+    message,
+  });
+  submit.disabled = false;
+  if (!result.ok) {
+    if (status) status.textContent = result.error?.message ?? 'Message was not sent.';
+    return;
+  }
+  if (messageInput) messageInput.value = '';
+  const existing = [...messageThread.querySelectorAll('.message-bubble')].map((bubble) => ({
+    id: Number(bubble.dataset.messageId),
+    body: bubble.textContent,
+    is_mine: bubble.classList.contains('is-mine'),
+  }));
+  renderMessages([...existing, result.message]);
+});
+
 stack?.addEventListener('pointerdown', (event) => {
   if (isPhotoControlTarget(event.target)) return;
 
@@ -292,4 +440,6 @@ globalThis.ainderBrowseController = Object.freeze({
   showCandidate,
   removeCandidate,
   removeIncomingLike,
+  openMessageView,
+  closeMessageView,
 });

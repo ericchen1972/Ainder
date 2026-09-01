@@ -6,6 +6,7 @@ require_once dirname(__DIR__).'/lib/session.php';
 require_once dirname(__DIR__).'/lib/config.php';
 require_once dirname(__DIR__).'/lib/database.php';
 require_once dirname(__DIR__).'/lib/candidates.php';
+require_once dirname(__DIR__).'/lib/matches.php';
 
 ainder_start_session();
 
@@ -39,6 +40,24 @@ try {
         (int) $member['id'],
         $now
     );
+    $matches = ainder_list_matches($database, (int) $member['id'], $now);
+    $requestedMatchId = max(0, (int) ($_GET['match'] ?? 0));
+    $selectedMatch = null;
+    foreach ($matches as $match) {
+        if ((int) $match['match_id'] === $requestedMatchId) {
+            $selectedMatch = $match;
+            break;
+        }
+    }
+    $messageMode = ($_GET['view'] ?? '') === 'messages'
+        && is_array($selectedMatch);
+    $initialMessages = $messageMode
+        ? ainder_list_match_messages(
+            $database,
+            (int) $member['id'],
+            (int) $selectedMatch['match_id']
+        )
+        : [];
 } catch (Throwable) {
     http_response_code(503);
     exit('Ainder is temporarily unavailable.');
@@ -86,11 +105,12 @@ $avatarPath = $avatarPath !== ''
             </form>
         </div>
         <div class="sidebar-tabs" role="tablist" aria-label="Member activity">
-            <button type="button" role="tab" aria-selected="true">Agent Likes</button>
-            <button type="button" role="tab" aria-selected="false">Messages</button>
+            <button type="button" role="tab" data-tab="agent-likes" aria-selected="<?= $messageMode ? 'false' : 'true' ?>">Agent Likes</button>
+            <button type="button" role="tab" data-tab="messages" aria-selected="<?= $messageMode ? 'true' : 'false' ?>">Messages</button>
         </div>
-        <?php if ($incomingLikes !== []): ?>
-            <ul class="agent-like-list" aria-label="Pending Agent Likes">
+        <div class="sidebar-panel" data-panel="agent-likes"<?= $messageMode ? ' hidden' : '' ?>>
+            <?php if ($incomingLikes !== []): ?>
+                <ul class="agent-like-list" aria-label="Pending Agent Likes">
                 <?php foreach ($incomingLikes as $incomingLike): ?>
                     <li
                         class="agent-like-row"
@@ -125,12 +145,61 @@ $avatarPath = $avatarPath !== ''
                         </button>
                     </li>
                 <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-        <div class="sidebar-empty"<?= $incomingLikes !== [] ? ' hidden' : '' ?>>
-            <span class="agent-symbol" aria-hidden="true">✦</span>
-            <h2>Your Agent handles Likes</h2>
-            <p>Browse freely. Swiping never sends a Like.</p>
+                </ul>
+            <?php endif; ?>
+            <div class="sidebar-empty"<?= $incomingLikes !== [] ? ' hidden' : '' ?>>
+                <span class="agent-symbol" aria-hidden="true">✦</span>
+                <h2>Your Agent handles Likes</h2>
+                <p>Browse freely. Swiping never sends a Like.</p>
+            </div>
+        </div>
+        <div class="sidebar-panel" data-panel="messages"<?= $messageMode ? '' : ' hidden' ?>>
+            <?php if ($matches !== []): ?>
+                <div class="message-list" aria-label="Matches">
+                    <?php foreach ($matches as $match): ?>
+                        <article
+                            class="match-card"
+                            role="button"
+                            tabindex="0"
+                            data-match-id="<?= (int) $match['match_id'] ?>"
+                            data-candidate-id="<?= (int) $match['candidate_id'] ?>"
+                            data-name="<?= $escape($match['display_name']) ?>"
+                            data-age="<?= (int) $match['age'] ?>"
+                        >
+                            <img
+                                class="match-card-photo"
+                                src="<?= $escape($match['photo_path']) ?>"
+                                alt=""
+                            >
+                            <div class="match-card-content">
+                                <div class="match-card-heading">
+                                    <strong><?= $escape($match['display_name']) ?></strong>
+                                    <span class="match-card-age"><?= (int) $match['age'] ?></span>
+                                </div>
+                                <button
+                                    class="match-card-opinion"
+                                    type="button"
+                                    data-opinion="<?= $escape($match['agent_opinion']) ?>"
+                                ><?= $escape($match['agent_opinion']) ?></button>
+                            </div>
+                            <button
+                                class="match-card-close"
+                                type="button"
+                                aria-label="Cancel Match with <?= $escape($match['display_name']) ?>"
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M6 6l12 12M18 6L6 18"></path>
+                                </svg>
+                            </button>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="messages-empty">
+                    <h2>No Messages yet</h2>
+                    <p>Your Matches will appear here.</p>
+                </div>
+            <?php endif; ?>
         </div>
     </aside>
 
@@ -147,10 +216,11 @@ $avatarPath = $avatarPath !== ''
         </header>
 
         <div class="mobile-tabs" role="tablist" aria-label="Member activity">
-            <button type="button" role="tab" aria-selected="true">Agent Likes</button>
-            <button type="button" role="tab" aria-selected="false">Messages</button>
+            <button type="button" role="tab" data-tab="agent-likes" aria-selected="<?= $messageMode ? 'false' : 'true' ?>">Agent Likes</button>
+            <button type="button" role="tab" data-tab="messages" aria-selected="<?= $messageMode ? 'true' : 'false' ?>">Messages</button>
         </div>
 
+        <div class="browse-content"<?= $messageMode ? ' hidden' : '' ?>>
         <?php if ($candidates === []): ?>
             <div class="candidate-empty">
                 <h1>目前沒有可瀏覽的會員</h1>
@@ -212,9 +282,47 @@ $avatarPath = $avatarPath !== ''
             </div>
             <p class="browse-hint">Drag the card to browse · Use the arrows to change photos</p>
         <?php endif; ?>
+        </div>
+
+        <section
+            class="message-view"
+            data-match-id="<?= $selectedMatch ? (int) $selectedMatch['match_id'] : '' ?>"
+            <?= $messageMode ? '' : 'hidden' ?>
+        >
+            <header class="message-header">
+                <button class="message-back" type="button" aria-label="Back to browse">←</button>
+                <div>
+                    <strong data-message-name><?= $selectedMatch ? $escape($selectedMatch['display_name']) : '' ?></strong>
+                    <span data-message-age><?= $selectedMatch ? (int) $selectedMatch['age'] : '' ?></span>
+                </div>
+            </header>
+            <div class="message-thread" aria-live="polite">
+                <?php foreach ($initialMessages as $message): ?>
+                    <p class="message-bubble<?= $message['is_mine'] ? ' is-mine' : '' ?>" data-message-id="<?= (int) $message['id'] ?>"><?= $escape($message['body']) ?></p>
+                <?php endforeach; ?>
+            </div>
+            <form class="message-composer">
+                <div class="emoji-picker">
+                    <button class="emoji-toggle" type="button" aria-expanded="false" aria-label="Open emoji list">☺</button>
+                    <div class="emoji-list" hidden>
+                        <?php foreach (['😀', '😊', '😍', '😂', '🥰', '👍', '❤️', '👋'] as $emoji): ?>
+                            <button type="button" data-emoji="<?= $emoji ?>"><?= $emoji ?></button>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <input name="message" type="text" maxlength="2000" autocomplete="off" placeholder="Write a message…" aria-label="Message">
+                <button class="message-send" type="submit">Send</button>
+            </form>
+        </section>
 
         <p class="visually-hidden" aria-live="polite" data-candidate-status></p>
     </section>
 </main>
+
+<dialog class="opinion-modal">
+    <button class="opinion-modal-close" type="button" aria-label="Close opinion">×</button>
+    <h2>Agent opinion</h2>
+    <p data-full-opinion></p>
+</dialog>
 </body>
 </html>

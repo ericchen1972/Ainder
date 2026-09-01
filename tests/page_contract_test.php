@@ -205,6 +205,23 @@ test('fifth migration adds legacy-compatible Agent opinions to Likes', function 
     }
 });
 
+test('sixth migration creates persistent Match messages', function () use ($root): void {
+    $source = file_get_contents(
+        $root.'/web/migrations/006_add_messages.php'
+    );
+
+    foreach ([
+        'CREATE TABLE IF NOT EXISTS messages',
+        'match_id',
+        'sender_user_id',
+        'body TEXT',
+        'ON DELETE CASCADE',
+        'migration_token',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+});
+
 test('signed uploads require an untracked signing key and public base URL', function () use ($root): void {
     $config = file_get_contents($root.'/web/lib/config.php');
     $example = file_get_contents($root.'/web/config.local.example.php');
@@ -404,6 +421,44 @@ test('desktop Agent Likes renders actionable pending Like rows', function () use
     ] as $needle) {
         expect_same(true, str_contains($script, $needle));
     }
+});
+
+test('Messages renders Match cards opinion modal and persistent composer', function () use ($root): void {
+    $page = file_get_contents($root.'/web/app/index.php');
+    $script = file_get_contents($root.'/web/assets/browse.js');
+    $style = file_get_contents($root.'/web/assets/browse.css');
+
+    foreach ([
+        'ainder_list_matches',
+        'message-list',
+        'match-card',
+        'match-card-photo',
+        'match-card-age',
+        'match-card-close',
+        'match-card-opinion',
+        'opinion-modal',
+        'message-view',
+        'message-back',
+        'message-thread',
+        'message-composer',
+        'emoji-list',
+        'data-tab="messages"',
+    ] as $needle) {
+        expect_same(true, str_contains($page.$style, $needle));
+    }
+    foreach ([
+        '/ainder/api/messages/list.php',
+        '/ainder/api/messages/send.php',
+        '/ainder/api/matches/unmatch.php',
+        'window.confirm',
+        'showModal',
+        'insertEmoji',
+        'openMessageView',
+        'closeMessageView',
+    ] as $needle) {
+        expect_same(true, str_contains($script, $needle));
+    }
+    expect_same(false, str_contains($page, 'Chloe Park'));
 });
 
 test('browse diagnostic is token protected and aggregate only', function () use ($root): void {

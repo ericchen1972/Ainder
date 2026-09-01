@@ -169,6 +169,13 @@ if (typeof context?.registerTool === 'function') {
       });
       if (result.ok) {
         browseController()?.removeCandidate(candidateId);
+        if (result.matched && result.match_id) {
+          setTimeout(() => {
+            window.location.assign(
+              `/ainder/app/?view=messages&match=${result.match_id}`,
+            );
+          }, 150);
+        }
       }
       return result;
     },

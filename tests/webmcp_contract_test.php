@@ -101,6 +101,8 @@ test('browse tools bind evaluation and Like to the current card', function () us
         "required: ['evaluation_token', 'opinion']",
         'Reuse the opinion already given',
         'removeCandidate',
+        'result.match_id',
+        'view=messages',
     ] as $needle) {
         expect_same(true, str_contains($tools, $needle));
     }

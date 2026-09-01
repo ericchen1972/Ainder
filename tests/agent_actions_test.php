@@ -52,6 +52,22 @@ test('Like API stores opinion and pending incoming Like can be removed', functio
     }
 });
 
+test('reciprocal Like returns a Match id without excluding Demo members', function (): void {
+    $actions = file_get_contents(
+        dirname(__DIR__).'/web/lib/agent_actions.php'
+    );
+
+    expect_same(true, str_contains($actions, "'match_id'"));
+    expect_same(false, str_contains(
+        $actions,
+        "(int) \$requester['is_demo'] !== 1"
+    ));
+    expect_same(false, str_contains(
+        $actions,
+        "(int) \$candidate['is_demo'] !== 1"
+    ));
+});
+
 test('evaluation and Like endpoints expose Profile errors', function (): void {
     $root = dirname(__DIR__);
     foreach (['evaluate.php', 'like.php'] as $file) {
