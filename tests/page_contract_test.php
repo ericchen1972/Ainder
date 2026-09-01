@@ -235,3 +235,22 @@ test('browse assets implement gestures looping and responsive layout', function 
 
     expect_same(false, preg_match('/like|heart|super.?like/i', $script) === 1);
 });
+
+test('browse diagnostic is token protected and aggregate only', function () use ($root): void {
+    $source = file_get_contents($root.'/web/diagnostics/browse_status.php');
+
+    foreach ([
+        'hash_equals',
+        'male_view_candidates',
+        'female_view_candidates',
+        'demo_female_candidates',
+        'demo_male_candidates',
+        'basic_intro_column_exists',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+
+    foreach (['display_name', 'profile_text', 'google_sub'] as $forbidden) {
+        expect_same(false, str_contains($source, $forbidden));
+    }
+});
