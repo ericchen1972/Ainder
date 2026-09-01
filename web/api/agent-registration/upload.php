@@ -62,6 +62,9 @@ try {
     if ($mime !== $upload['declared_mime']) {
         throw new InvalidArgumentException('PHOTO_TYPE_MISMATCH');
     }
+    if (!ainder_is_client_processed_photo($sourcePath)) {
+        throw new InvalidArgumentException('PHOTO_FORMAT_INVALID');
+    }
 
     ainder_process_image($sourcePath, $processedPath);
     ainder_mark_agent_upload_ready($database, $uploadId, $processedPath);

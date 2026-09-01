@@ -82,7 +82,7 @@ function ainder_prepare_agent_upload(
     if ($order < 1 || $order > 6) {
         throw new InvalidArgumentException('PHOTO_ORDER_INVALID');
     }
-    if (!in_array($mime, AINDER_PROCESSABLE_IMAGE_MIMES, true)) {
+    if ($mime !== AINDER_CLIENT_PHOTO_MIME) {
         throw new InvalidArgumentException('PHOTO_TYPE_INVALID');
     }
     if ($size < 1 || $size > AINDER_MAX_PHOTO_BYTES) {

@@ -5,11 +5,8 @@ declare(strict_types=1);
 require_once __DIR__.'/image_processor.php';
 
 const AINDER_MAX_PHOTO_BYTES = 10 * 1024 * 1024;
-const AINDER_PHOTO_MIME_EXTENSIONS = [
-    'image/jpeg' => 'jpg',
-    'image/png' => 'png',
-    'image/webp' => 'webp',
-];
+const AINDER_CLIENT_PHOTO_MIME = 'image/webp';
+const AINDER_CLIENT_PHOTO_ERROR = '照片必須先裁切為 720×1280 WebP。';
 
 function ainder_normalize_uploads(array $files): array
 {
@@ -40,13 +37,22 @@ function ainder_validate_photo_count(array $photos): array
         : ['photos' => '請上傳 2–6 張照片。'];
 }
 
-function ainder_photo_extension(array $photo): ?string
+function ainder_is_client_processed_photo(string $path): bool
 {
-    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($photo['tmp_name']);
+    if ($path === '' || !is_file($path)) {
+        return false;
+    }
+    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($path);
+    if ($mime !== AINDER_CLIENT_PHOTO_MIME) {
+        return false;
+    }
 
-    return is_string($mime)
-        ? (AINDER_PHOTO_MIME_EXTENSIONS[$mime] ?? null)
-        : null;
+    $info = @getimagesize($path);
+
+    return is_array($info)
+        && (int) ($info[0] ?? 0) === AINDER_OUTPUT_WIDTH
+        && (int) ($info[1] ?? 0) === AINDER_OUTPUT_HEIGHT
+        && ($info['mime'] ?? null) === AINDER_CLIENT_PHOTO_MIME;
 }
 
 function ainder_validate_photo_file(array $photo): ?string
@@ -59,9 +65,9 @@ function ainder_validate_photo_file(array $photo): ?string
         return '每張照片不可超過 10MB。';
     }
 
-    return ainder_photo_extension($photo) === null
-        ? '只接受 JPG、PNG 或 WebP 圖片。'
-        : null;
+    return ainder_is_client_processed_photo((string) ($photo['tmp_name'] ?? ''))
+        ? null
+        : AINDER_CLIENT_PHOTO_ERROR;
 }
 
 function ainder_stage_photos(

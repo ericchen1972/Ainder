@@ -35,7 +35,7 @@ test('non-image content is rejected', function (): void {
     $path = tempnam(sys_get_temp_dir(), 'ainder-photo-');
     file_put_contents($path, 'not an image');
 
-    expect_same('只接受 JPG、PNG 或 WebP 圖片。', ainder_validate_photo_file([
+    expect_same('照片必須先裁切為 720×1280 WebP。', ainder_validate_photo_file([
         'error' => UPLOAD_ERR_OK,
         'size' => filesize($path),
         'tmp_name' => $path,
@@ -44,12 +44,40 @@ test('non-image content is rejected', function (): void {
     unlink($path);
 });
 
-test('valid PNG can be staged and cleaned', function (): void {
+test('original JPEG or PNG is rejected before server image decoding', function (): void {
     $source = tempnam(sys_get_temp_dir(), 'ainder-source-');
     file_put_contents($source, base64_decode(
         'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         true
     ));
+
+    expect_same('照片必須先裁切為 720×1280 WebP。', ainder_validate_photo_file([
+        'error' => UPLOAD_ERR_OK,
+        'size' => filesize($source),
+        'tmp_name' => $source,
+    ]));
+    unlink($source);
+});
+
+test('incorrectly sized WebP is rejected', function (): void {
+    $source = tempnam(sys_get_temp_dir(), 'ainder-source-');
+    $image = imagecreatetruecolor(10, 10);
+    imagewebp($image, $source, 84);
+    imagedestroy($image);
+
+    expect_same('照片必須先裁切為 720×1280 WebP。', ainder_validate_photo_file([
+        'error' => UPLOAD_ERR_OK,
+        'size' => filesize($source),
+        'tmp_name' => $source,
+    ]));
+    unlink($source);
+});
+
+test('canonical WebP can be staged and cleaned', function (): void {
+    $source = tempnam(sys_get_temp_dir(), 'ainder-source-');
+    $image = imagecreatetruecolor(720, 1280);
+    imagewebp($image, $source, 84);
+    imagedestroy($image);
     $directory = sys_get_temp_dir().'/ainder-stage-'.bin2hex(random_bytes(4));
     $photo = ['error' => UPLOAD_ERR_OK, 'size' => filesize($source), 'tmp_name' => $source];
     $staged = ainder_stage_photos([$photo], $directory, function (string $from, string $to): bool {

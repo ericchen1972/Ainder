@@ -112,7 +112,7 @@ function ainder_field_error(array $errors, string $field): string
                             <button class="photo-slot" type="button" data-slot="<?= $slot ?>" aria-label="新增第 <?= $slot + 1 ?> 張照片"><span>＋</span></button>
                         <?php endfor; ?>
                     </div>
-                    <p class="photo-help">至少上傳 2 張，每張不超過 10MB。支援 JPG、PNG、WebP。</p>
+                    <p class="photo-help">至少上傳 2 張，每張不超過 10MB。支援 JPG、PNG、WebP，選取後會自動以 9:16 裁切。</p>
                     <p class="field-error photo-client-error" hidden></p>
                     <?= ainder_field_error($errors, 'photos') ?>
                 </div>

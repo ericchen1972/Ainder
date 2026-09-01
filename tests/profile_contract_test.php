@@ -75,6 +75,23 @@ test('photo script enforces two to six selected files', function () use ($profil
     expect_same(true, str_contains($source, 'URL.revokeObjectURL'));
 });
 
+test('manual photo script creates canonical portrait WebPs before submit', function () use ($profileRoot): void {
+    $source = file_get_contents($profileRoot.'/web/assets/profile.js');
+
+    foreach ([
+        'OUTPUT_WIDTH = 720',
+        'OUTPUT_HEIGHT = 1280',
+        'WEBP_QUALITY = 0.84',
+        "Math.max(OUTPUT_WIDTH / source.width, OUTPUT_HEIGHT / source.height)",
+        "canvas.toBlob",
+        "'image/webp'",
+        'new File(',
+        'isProcessing',
+    ] as $contract) {
+        expect_same(true, str_contains($source, $contract));
+    }
+});
+
 test('manual and Agent uploads share the image processor', function () use ($profileRoot): void {
     $photos = file_get_contents($profileRoot.'/web/lib/photos.php');
     $register = file_get_contents($profileRoot.'/web/profile/register.php');

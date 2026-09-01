@@ -24,9 +24,13 @@ test('registration page loads top-level JavaScript WebMCP tools', function () us
         'If sort_order is 1',
         'If sort_order is 2 through 6',
         'do not need a person or visible face',
+        '720 x 1280 WebP',
+        'centered 9:16 cover crop',
     ] as $policy) {
         expect_same(true, str_contains($tools, $policy));
     }
+    expect_same(true, str_contains($tools, "enum: ['image/webp']"));
+    expect_same(false, str_contains($tools, "enum: ['image/jpeg', 'image/png', 'image/webp']"));
     foreach ([
         'confirm the public personal data',
         'consents to creating and storing a private Agent Profile',
