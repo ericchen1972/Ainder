@@ -25,7 +25,7 @@ if (typeof context?.registerTool === 'function') {
 
   await context.registerTool({
     name: 'prepare_photo_upload',
-    description: 'Create one signed upload URL for a confirmed Ainder registration photo. Before calling, the user must designate sort order 1 as the main photo; confirm it is one real human with a visible face, and reject clearly sexual, violent, illegal, or otherwise unsuitable supplied images.',
+    description: 'Create one signed upload URL for a confirmed Ainder registration photo. If sort_order is 1, confirm the designated main photo is one real human with a visible face. If sort_order is 2 through 6, supporting photos may show pets, travel, scenery, or other lifestyle content and do not need a person or visible face. Reject clearly sexual, violent, illegal, or otherwise unsuitable supplied images at every order.',
     inputSchema: {
       type: 'object',
       properties: {

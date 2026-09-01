@@ -20,6 +20,13 @@ test('registration page loads top-level JavaScript WebMCP tools', function () us
     ] as $name) {
         expect_same(true, str_contains($tools, $name));
     }
+    foreach ([
+        'If sort_order is 1',
+        'If sort_order is 2 through 6',
+        'do not need a person or visible face',
+    ] as $policy) {
+        expect_same(true, str_contains($tools, $policy));
+    }
     expect_same(false, str_contains($tools, 'openai/fileParams'));
     expect_same(false, str_contains($tools, 'registration-form'));
 });
