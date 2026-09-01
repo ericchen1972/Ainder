@@ -98,3 +98,75 @@ test('a Match cannot contain a Demo member', function (): void {
     expect_same(false, ainder_can_create_match(['is_demo' => 1], ['is_demo' => 1]));
     expect_same(true, ainder_can_create_match(['is_demo' => 0], ['is_demo' => 0]));
 });
+
+test('Demo manifest validator rejects an incomplete cohort', function (): void {
+    $errors = ainder_validate_demo_manifest(
+        [],
+        new DateTimeImmutable('2026-09-01 00:00:00')
+    );
+
+    expect_same(true, $errors !== []);
+});
+
+test('frozen Demo manifest contains the exact approved cohort', function (): void {
+    $manifestPath = dirname(__DIR__).'/web/seeds/demo_members.php';
+    $ledgerPath = dirname(__DIR__).'/web/seeds/demo_photo_tracking.php';
+
+    expect_same(true, is_file($manifestPath));
+    expect_same(true, is_file($ledgerPath));
+
+    $manifest = require $manifestPath;
+    $trackedPhotoIds = require $ledgerPath;
+    $errors = ainder_validate_demo_manifest(
+        $manifest,
+        new DateTimeImmutable('2026-09-01 00:00:00')
+    );
+
+    expect_same([], $errors);
+    expect_same(20, count($manifest));
+
+    $cohorts = array_count_values(array_column($manifest, 'cohort'));
+    expect_same([
+        'asian_male' => 5,
+        'asian_female' => 5,
+        'western_male' => 5,
+        'western_female' => 5,
+    ], $cohorts);
+
+    $manifestPhotoIds = [];
+    foreach ($manifest as $member) {
+        expect_same(2, count($member['photos']));
+        expect_same(true, mb_strlen($member['basic_intro'], 'UTF-8') <= 50);
+        expect_same(true, $member['is_demo']);
+
+        foreach ($member['photos'] as $photo) {
+            $manifestPhotoIds[] = $photo['source_photo_id'];
+        }
+    }
+
+    sort($manifestPhotoIds);
+    sort($trackedPhotoIds);
+    expect_same(40, count(array_unique($trackedPhotoIds)));
+    expect_same($manifestPhotoIds, $trackedPhotoIds);
+});
+
+test('Demo seed endpoint is token protected and transactional', function (): void {
+    $endpoint = file_get_contents(
+        dirname(__DIR__).'/web/seeds/run_demo_members.php'
+    );
+    $library = file_get_contents(dirname(__DIR__).'/web/lib/demo.php');
+    $source = $endpoint.$library;
+
+    foreach ([
+        'hash_equals',
+        'demo_members.php',
+        'begin_transaction',
+        'ON DUPLICATE KEY UPDATE',
+        'DELETE FROM user_photos',
+        'DELETE FROM agent_profiles',
+        'INSERT INTO agent_profiles',
+        'rollback',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+});
