@@ -75,7 +75,7 @@ $avatarPath = $avatarPath !== ''
             <img class="sidebar-logo" src="/ainder/assets/ainder-logo-white.webp" alt="Ainder">
             <form class="logout-form" method="post" action="/ainder/logout.php">
                 <input type="hidden" name="csrf_token" value="<?= $escape($csrfToken) ?>">
-                <button type="submit">登出</button>
+                <button type="submit">Logout</button>
             </form>
         </div>
         <div class="sidebar-tabs" role="tablist" aria-label="Member activity">
@@ -96,10 +96,15 @@ $avatarPath = $avatarPath !== ''
                 <img src="<?= $escape($avatarPath) ?>" alt="會員資料">
                 <form class="logout-form" method="post" action="/ainder/logout.php">
                     <input type="hidden" name="csrf_token" value="<?= $escape($csrfToken) ?>">
-                    <button type="submit">登出</button>
+                    <button type="submit">Logout</button>
                 </form>
             </div>
         </header>
+
+        <div class="mobile-tabs" role="tablist" aria-label="Member activity">
+            <button type="button" role="tab" aria-selected="true">Agent Likes</button>
+            <button type="button" role="tab" aria-selected="false">Messages</button>
+        </div>
 
         <?php if ($candidates === []): ?>
             <div class="candidate-empty">

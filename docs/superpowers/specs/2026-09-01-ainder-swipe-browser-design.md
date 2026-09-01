@@ -32,7 +32,7 @@ The sidebar does not contain a Like button, compatibility score, Agent Profile t
 
 ### Mobile
 
-The sidebar is removed. A compact top bar contains the Ainder wordmark and member entry point. The portrait card fills the remaining viewport while respecting safe areas and preventing horizontal overflow.
+The sidebar is removed. A compact top bar contains the Ainder wordmark, member avatar, and English `Logout` action. A second 44px navigation row keeps `Agent Likes` and `Messages` visible. The portrait card fills the remaining viewport below both rows while respecting safe areas and preventing horizontal overflow.
 
 ### Candidate Card
 

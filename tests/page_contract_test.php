@@ -241,7 +241,8 @@ test('authenticated app provides a CSRF-protected POST sign-out', function () us
     expect_same(2, substr_count($app, 'action="/ainder/logout.php"'));
     expect_same(2, substr_count($app, 'name="csrf_token"'));
     expect_same(2, substr_count($app, 'method="post"'));
-    expect_same(2, substr_count($app, '>登出<'));
+    expect_same(2, substr_count($app, '>Logout<'));
+    expect_same(false, str_contains($app, '>登出<'));
     expect_same(true, str_contains($logout, "\$_SERVER['REQUEST_METHOD']"));
     expect_same(true, str_contains($logout, 'ainder_form_csrf_is_valid'));
     expect_same(true, str_contains($logout, "header('Location: /ainder/app/')"));
@@ -341,6 +342,22 @@ test('mobile member avatar remains square and does not inherit logo sizing', fun
         expect_same(true, str_contains($style, $needle));
     }
     expect_same(false, str_contains($style, '.mobile-bar img:first-child'));
+});
+
+test('mobile navigation keeps Agent Likes and Messages visible', function () use ($root): void {
+    $page = file_get_contents($root.'/web/app/index.php');
+    $style = file_get_contents($root.'/web/assets/browse.css');
+
+    expect_same(true, str_contains($page, 'class="mobile-tabs"'));
+    expect_same(2, substr_count($page, '>Agent Likes<'));
+    expect_same(2, substr_count($page, '>Messages<'));
+    foreach ([
+        '.mobile-tabs',
+        'height: 44px',
+        'height: calc(100dvh - 102px)',
+    ] as $needle) {
+        expect_same(true, str_contains($style, $needle));
+    }
 });
 
 test('browse diagnostic is token protected and aggregate only', function () use ($root): void {
