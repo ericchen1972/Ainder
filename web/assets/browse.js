@@ -2,6 +2,7 @@ import {
   wrapIndex,
   candidateStepForDrag,
   photoIndexAfterStep,
+  isPhotoControlTarget,
 } from 'ainder-browse-model';
 
 const browser = document.querySelector('.candidate-browser');
@@ -80,12 +81,14 @@ function movePhoto(card, step) {
   );
 }
 
-document.querySelector('.candidate-next')?.addEventListener('click', () => {
-  moveCandidate(1);
-});
-document.querySelector('.candidate-previous')?.addEventListener('click', () => {
-  moveCandidate(-1);
-});
+function updatePhotoControls(card) {
+  const availableCount = card.querySelectorAll(
+    '.candidate-photo:not(.has-error)',
+  ).length;
+  card.querySelectorAll('.photo-control').forEach((control) => {
+    control.hidden = availableCount < 2;
+  });
+}
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowLeft') moveCandidate(1);
@@ -93,9 +96,15 @@ document.addEventListener('keydown', (event) => {
 });
 
 cards.forEach((card) => {
+  card.querySelector('.photo-previous')?.addEventListener('pointerdown', (event) => {
+    event.stopPropagation();
+  });
   card.querySelector('.photo-previous')?.addEventListener('click', (event) => {
     event.stopPropagation();
     movePhoto(card, -1);
+  });
+  card.querySelector('.photo-next')?.addEventListener('pointerdown', (event) => {
+    event.stopPropagation();
   });
   card.querySelector('.photo-next')?.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -103,6 +112,9 @@ cards.forEach((card) => {
   });
 
   card.querySelectorAll('.candidate-photo img').forEach((image) => {
+    image.addEventListener('dragstart', (event) => {
+      event.preventDefault();
+    });
     image.addEventListener('error', () => {
       image.closest('.candidate-photo')?.classList.add('has-error');
       const available = [
@@ -111,12 +123,15 @@ cards.forEach((card) => {
       if (available.length > 0) {
         showPhoto(card, Number(available[0].dataset.photoIndex));
       }
+      updatePhotoControls(card);
       card.classList.toggle('all-photos-failed', available.length === 0);
     });
   });
 });
 
 stack?.addEventListener('pointerdown', (event) => {
+  if (isPhotoControlTarget(event.target)) return;
+
   pointerStart = event.clientX;
   pointerDelta = 0;
   stack.setPointerCapture(event.pointerId);
