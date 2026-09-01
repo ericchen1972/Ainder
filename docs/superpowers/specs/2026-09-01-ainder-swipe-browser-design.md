@@ -1,7 +1,7 @@
 # Ainder Swipe Browser Design
 
 **Date:** 2026-09-01  
-**Status:** Approved design, pending written-spec review
+**Status:** Approved
 
 ## Objective
 
@@ -148,8 +148,8 @@ Automated checks cover:
 
 Live verification uses a real registered member and confirms:
 
-- a male member can browse exactly the ten seeded female Demo members;
-- a female member can browse exactly the ten seeded male Demo members;
+- a male member can browse all active female members, including the ten seeded female Demo members;
+- a female member can browse all active male members, including the ten seeded male Demo members;
 - the final candidate wraps to the first;
 - swiping never creates a Like or Match;
 - desktop and mobile proportions match the approved layout A direction;
