@@ -39,7 +39,6 @@ if (typeof context?.registerTool === 'function') {
       properties: {},
       additionalProperties: false,
     },
-    annotations: { readOnlyHint: true },
     execute: () => {
       const candidateId = currentCandidateId();
       if (!candidateId) {
