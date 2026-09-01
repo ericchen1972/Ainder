@@ -43,3 +43,27 @@ test('Agent Profile payload is bounded and typed', function (): void {
         'interaction_density' => 'constant',
     ])) > 0);
 });
+
+test('Agent endpoints separate WebMCP JSON from signed image bytes', function (): void {
+    $root = dirname(__DIR__);
+    $start = file_get_contents(
+        $root.'/web/api/agent-registration/start.php'
+    );
+    $prepare = file_get_contents(
+        $root.'/web/api/agent-registration/prepare-photo.php'
+    );
+    $upload = file_get_contents(
+        $root.'/web/api/agent-registration/upload.php'
+    );
+    $submit = file_get_contents(
+        $root.'/web/api/agent-registration/submit.php'
+    );
+
+    expect_same(true, str_contains($start, 'ainder_pending_identity_is_valid'));
+    expect_same(true, str_contains($prepare, 'ainder_signed_upload_url'));
+    expect_same(true, str_contains($upload, "fopen('php://input'"));
+    expect_same(true, str_contains($upload, 'ainder_verify_upload_signature'));
+    expect_same(true, str_contains($upload, 'ainder_process_image'));
+    expect_same(true, str_contains($submit, 'ainder_complete_agent_registration'));
+    expect_same(false, str_contains($submit, '$_FILES'));
+});
