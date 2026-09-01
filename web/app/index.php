@@ -7,6 +7,7 @@ require_once dirname(__DIR__).'/lib/config.php';
 require_once dirname(__DIR__).'/lib/database.php';
 require_once dirname(__DIR__).'/lib/candidates.php';
 require_once dirname(__DIR__).'/lib/matches.php';
+require_once dirname(__DIR__).'/lib/profile_editor.php';
 
 ainder_start_session();
 
@@ -41,6 +42,10 @@ try {
         $now
     );
     $matches = ainder_list_matches($database, (int) $member['id'], $now);
+    $profilePhotos = ainder_member_profile_photos(
+        $database,
+        (int) $member['id']
+    );
     $requestedMatchId = max(0, (int) ($_GET['match'] ?? 0));
     $selectedMatch = null;
     foreach ($matches as $match) {
@@ -92,12 +97,15 @@ $avatarPath = $avatarPath !== ''
     <script type="importmap">{"imports":{"ainder-browse-model":"/ainder/assets/browse-model.js?v=<?= $assetVersion('/assets/browse-model.js') ?>"}}</script>
     <script type="module" src="/ainder/assets/browse.js?v=<?= $assetVersion('/assets/browse.js') ?>"></script>
     <script type="module" src="/ainder/assets/webmcp-app.js?v=<?= $assetVersion('/assets/webmcp-app.js') ?>"></script>
+    <script type="module" src="/ainder/assets/profile-editor.js?v=<?= $assetVersion('/assets/profile-editor.js') ?>"></script>
 </head>
 <body class="browse-page">
 <main class="candidate-browser" data-current-candidate-id="<?= $escape($currentCandidateId) ?>">
     <aside class="browse-sidebar" aria-label="Ainder navigation">
         <div class="member-bar">
-            <img src="<?= $escape($avatarPath) ?>" alt="">
+            <button class="profile-open" type="button" aria-label="Edit profile">
+                <img data-member-avatar src="<?= $escape($avatarPath) ?>" alt="">
+            </button>
             <img class="sidebar-logo" src="/ainder/assets/ainder-logo-white.webp" alt="Ainder">
             <form class="logout-form" method="post" action="/ainder/logout.php">
                 <input type="hidden" name="csrf_token" value="<?= $escape($csrfToken) ?>">
@@ -207,7 +215,9 @@ $avatarPath = $avatarPath !== ''
         <header class="mobile-bar">
             <img class="mobile-logo" src="/ainder/assets/ainder-logo-white.webp" alt="Ainder">
             <div class="mobile-member-actions">
-                <img src="<?= $escape($avatarPath) ?>" alt="會員資料">
+                <button class="profile-open" type="button" aria-label="Edit profile">
+                    <img data-member-avatar src="<?= $escape($avatarPath) ?>" alt="會員資料">
+                </button>
                 <form class="logout-form" method="post" action="/ainder/logout.php">
                     <input type="hidden" name="csrf_token" value="<?= $escape($csrfToken) ?>">
                     <button type="submit">Logout</button>
@@ -323,6 +333,64 @@ $avatarPath = $avatarPath !== ''
     <button class="opinion-modal-close" type="button" aria-label="Close opinion">×</button>
     <h2>Agent opinion</h2>
     <p data-full-opinion></p>
+</dialog>
+
+<dialog class="profile-editor-modal" aria-labelledby="profile-editor-title">
+    <form class="profile-editor-form" method="dialog">
+        <header class="profile-editor-header">
+            <div>
+                <span class="profile-editor-kicker">Ainder</span>
+                <h2 id="profile-editor-title">Edit profile</h2>
+            </div>
+            <button class="profile-editor-close" type="button" aria-label="Close profile editor">×</button>
+        </header>
+        <label class="profile-editor-label" for="profile-display-name">Name</label>
+        <input
+            id="profile-display-name"
+            name="display_name"
+            type="text"
+            maxlength="120"
+            value="<?= $escape($member['display_name']) ?>"
+            required
+        >
+        <div class="profile-photo-heading">
+            <strong>Photos</strong>
+            <span>First photo is the main photo</span>
+        </div>
+        <div class="profile-photo-grid">
+            <?php foreach ($profilePhotos as $photo): ?>
+                <?php $slot = (int) $photo['sort_order']; ?>
+                <button
+                    class="profile-photo-slot"
+                    type="button"
+                    data-profile-photo-slot="<?= $slot ?>"
+                    aria-label="Replace photo <?= $slot ?>"
+                >
+                    <img src="<?= $escape($photo['file_path']) ?>" alt="Profile photo <?= $slot ?>">
+                    <?php if ($slot === 1): ?>
+                        <span class="profile-photo-main">Main</span>
+                    <?php endif; ?>
+                </button>
+            <?php endforeach; ?>
+            <?php if (count($profilePhotos) < 6): ?>
+                <button
+                    class="profile-photo-add"
+                    type="button"
+                    aria-label="Add photo <?= count($profilePhotos) + 1 ?>"
+                >＋</button>
+            <?php endif; ?>
+        </div>
+        <input
+            class="visually-hidden"
+            data-profile-photo-input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+        >
+        <p class="profile-editor-help">Tap an existing photo to replace it. Photos cannot be deleted.</p>
+        <p class="profile-editor-error" role="alert" hidden></p>
+        <input type="hidden" name="csrf_token" value="<?= $escape($csrfToken) ?>">
+        <button class="profile-editor-save" type="submit">Save changes</button>
+    </form>
 </dialog>
 </body>
 </html>

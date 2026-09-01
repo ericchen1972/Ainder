@@ -272,7 +272,7 @@ test('authenticated app provides a CSRF-protected POST sign-out', function () us
     $logout = file_get_contents($root.'/web/logout.php');
 
     expect_same(2, substr_count($app, 'action="/ainder/logout.php"'));
-    expect_same(2, substr_count($app, 'name="csrf_token"'));
+    expect_same(3, substr_count($app, 'name="csrf_token"'));
     expect_same(2, substr_count($app, 'method="post"'));
     expect_same(2, substr_count($app, '>Logout<'));
     expect_same(false, str_contains($app, '>登出<'));
@@ -366,7 +366,7 @@ test('mobile member avatar remains square and does not inherit logo sizing', fun
 
     expect_same(true, str_contains($page, 'class="mobile-logo"'));
     foreach ([
-        '.mobile-member-actions > img',
+        '.mobile-member-actions .profile-open',
         'width: 34px',
         'height: 34px',
         'aspect-ratio: 1',
@@ -477,6 +477,36 @@ test('profile update endpoint protects multipart member photo changes', function
         expect_same(true, str_contains($source, $needle));
     }
     expect_same(false, str_contains($source, 'document.modelContext'));
+});
+
+test('authenticated app renders a non-WebMCP profile editor modal', function () use ($root): void {
+    $page = file_get_contents($root.'/web/app/index.php');
+    $script = file_get_contents($root.'/web/assets/profile-editor.js');
+
+    foreach ([
+        'ainder_member_profile_photos',
+        'aria-label="Edit profile"',
+        'profile-editor-modal',
+        'profile-editor-form',
+        'profile-photo-grid',
+        'profile-photo-add',
+        'profile-editor-error',
+        'profile-editor.js?v=',
+    ] as $needle) {
+        expect_same(true, str_contains($page, $needle));
+    }
+    foreach ([
+        'preprocessProfilePhoto',
+        'createProfilePhotoState',
+        '/ainder/api/profile/update.php',
+        'FormData',
+        'photo_slots[]',
+        'URL.revokeObjectURL',
+    ] as $needle) {
+        expect_same(true, str_contains($script, $needle));
+    }
+    expect_same(false, str_contains($script, 'document.modelContext'));
+    expect_same(false, str_contains($page, 'profile-photo-remove'));
 });
 
 test('browse diagnostic is token protected and aggregate only', function () use ($root): void {
