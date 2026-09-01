@@ -266,7 +266,7 @@ test('browse card separates candidate drag from inside photo controls', function
         'class="photo-control photo-next"',
         'candidate-name',
         'candidate-age',
-        '拖曳卡片換人 · 卡片內箭頭換照片',
+        'Drag the card to browse · Use the arrows to change photos',
     ] as $needle) {
         expect_same(true, str_contains($page, $needle));
     }

@@ -160,7 +160,7 @@ $avatarPath = $avatarPath !== ''
                     </article>
                 <?php endforeach; ?>
             </div>
-            <p class="browse-hint">拖曳卡片換人 · 卡片內箭頭換照片</p>
+            <p class="browse-hint">Drag the card to browse · Use the arrows to change photos</p>
         <?php endif; ?>
 
         <p class="visually-hidden" aria-live="polite" data-candidate-status></p>

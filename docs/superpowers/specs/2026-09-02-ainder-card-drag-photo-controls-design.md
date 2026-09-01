@@ -76,7 +76,7 @@ The age remains readable over the existing bottom gradient but must no longer co
 
 Replace the desktop hint with wording that explains the separated controls:
 
-`拖曳卡片換人 · 卡片內箭頭換照片`
+`Drag the card to browse · Use the arrows to change photos`
 
 The hint remains hidden in the current mobile layout. Accessible labels continue to identify the inside controls as previous and next photo. The live candidate status remains unchanged.
 
