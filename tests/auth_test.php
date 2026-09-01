@@ -52,3 +52,25 @@ test('pending identity expires at thirty minutes', function (): void {
     expect_same(true, ainder_pending_identity_is_valid($session, 1999));
     expect_same(false, ainder_pending_identity_is_valid($session, 2000));
 });
+
+test('configuration fixes the database name to ainder', function (): void {
+    $source = file_get_contents(dirname(__DIR__).'/web/lib/config.php');
+
+    expect_same(true, str_contains($source, "'db_name' => 'ainder'"));
+    expect_same(false, str_contains($source, "'db_name' => 'sweety'"));
+});
+
+test('new Google identity has no member insert path', function (): void {
+    $source = file_get_contents(dirname(__DIR__).'/web/auth/google.php');
+
+    expect_same(true, str_contains($source, 'ainder_pending_identity'));
+    expect_same(false, preg_match('/\\bINSERT\\b/i', $source) === 1);
+});
+
+test('session cookie is isolated to the Ainder path', function (): void {
+    $source = file_get_contents(dirname(__DIR__).'/web/lib/session.php');
+
+    expect_same(true, str_contains($source, "session_name('AINDERSESSID')"));
+    expect_same(true, str_contains($source, "'path' => '/ainder/'"));
+    expect_same(true, str_contains($source, "'samesite' => 'Lax'"));
+});
