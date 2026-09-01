@@ -38,7 +38,7 @@ The sidebar is removed. A compact top bar contains the Ainder wordmark and membe
 
 The public card contains only:
 
-- two photos;
+- all 2–6 registered photos;
 - display name;
 - calculated age;
 - the public `basic_intro` field of at most 50 characters;
@@ -114,8 +114,8 @@ A dedicated JavaScript controller owns candidate index, photo index, circular mo
 ## Error and Empty States
 
 - No eligible candidates: show a centered message that no members are currently available; keep the member/sidebar navigation usable.
-- One photo fails: move to the other photo and keep attribution synchronized.
-- Both photos fail: show a dark branded image placeholder while retaining the member's public text.
+- One photo fails: move to the next available photo and keep attribution synchronized.
+- All photos fail: show a dark branded image placeholder while retaining the member's public text.
 - Candidate payload is malformed: omit the malformed candidate rather than leaking an exception into the page.
 - Database failure: return the existing generic service-unavailable response without database details.
 - JavaScript unavailable: render the first candidate and functional photo/candidate links or buttons through a conservative server-rendered fallback where practical; no Like action appears.
