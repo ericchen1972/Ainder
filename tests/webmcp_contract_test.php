@@ -32,3 +32,16 @@ test('app page loads confirmed Profile WebMCP tool', function () use ($webmcpRoo
     expect_same(true, str_contains($page, 'ainder-csrf-token'));
     expect_same(true, str_contains($tools, 'upsert_my_agent_profile'));
 });
+
+test('browse tools bind evaluation and Like to the current card', function () use ($webmcpRoot): void {
+    $tools = file_get_contents($webmcpRoot.'/web/assets/webmcp-app.js');
+    foreach ([
+        'evaluate_current_candidate',
+        'send_like_to_current_candidate',
+    ] as $name) {
+        expect_same(true, str_contains($tools, $name));
+    }
+    expect_same(true, str_contains($tools, 'currentCandidateId()'));
+    expect_same(true, str_contains($tools, '/api/candidates/evaluate.php'));
+    expect_same(true, str_contains($tools, '/api/candidates/like.php'));
+});

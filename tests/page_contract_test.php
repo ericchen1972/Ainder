@@ -233,6 +233,13 @@ test('authenticated app renders the approved public browse surface', function ()
     }
 });
 
+test('browse page exposes no visible Like control', function () use ($root): void {
+    $page = file_get_contents($root.'/web/app/index.php');
+    expect_same(false, str_contains($page, 'class="like-button"'));
+    expect_same(false, str_contains($page, 'data-action="like"'));
+    expect_same(true, str_contains($page, 'webmcp-app.js'));
+});
+
 test('browse assets implement gestures looping and responsive layout', function () use ($root): void {
     $script = file_get_contents($root.'/web/assets/browse.js');
     $style = file_get_contents($root.'/web/assets/browse.css');
