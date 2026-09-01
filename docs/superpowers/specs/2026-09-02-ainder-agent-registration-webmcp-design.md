@@ -134,6 +134,8 @@ This WebMCP write tool:
 
 This WebMCP write tool accepts the registration session identifier plus source filename, detected client MIME type, byte size, and requested display order.
 
+Its tool description must make the display-order policy explicit: `sort_order = 1` is the designated main photo and requires one real human with a visible face; `sort_order = 2–6` are supporting photos and may contain pets, travel, scenery, or other lifestyle content without a person-count or face-visibility check. The basic inappropriate-content check still applies to every order.
+
 It returns:
 
 - a short-lived signed upload URL;
