@@ -81,6 +81,38 @@ function movePhoto(card, step) {
   );
 }
 
+function candidateSnapshot(card = currentCard()) {
+  if (!card) return null;
+
+  const photos = [
+    ...card.querySelectorAll('.candidate-photo:not(.has-error)'),
+  ];
+  const currentPhotoIndex = photos.findIndex((photo) => (
+    photo.classList.contains('is-active')
+  ));
+
+  return {
+    candidate_id: Number(card.dataset.candidateId),
+    display_name: card.querySelector('.candidate-name')?.textContent?.trim() ?? '',
+    age: Number(card.querySelector('.candidate-age')?.textContent?.trim() ?? 0),
+    current_photo_index: currentPhotoIndex >= 0 ? currentPhotoIndex + 1 : 0,
+    photo_count: photos.length,
+  };
+}
+
+function browseCandidates(direction) {
+  moveCandidate(direction === 'previous' ? -1 : 1);
+  return candidateSnapshot();
+}
+
+function changeCandidatePhoto(direction) {
+  const card = currentCard();
+  if (!card) return null;
+
+  movePhoto(card, direction === 'previous' ? -1 : 1);
+  return candidateSnapshot(card);
+}
+
 function updatePhotoControls(card) {
   const availableCount = card.querySelectorAll(
     '.candidate-photo:not(.has-error)',
@@ -174,3 +206,9 @@ stack?.addEventListener('click', (event) => {
 }, true);
 
 setCurrentCandidate(0);
+
+globalThis.ainderBrowseController = Object.freeze({
+  getCurrentCandidate: () => candidateSnapshot(),
+  browseCandidates,
+  changeCandidatePhoto,
+});

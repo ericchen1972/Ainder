@@ -325,6 +325,24 @@ test('browse assets implement gestures looping and responsive layout', function 
     expect_same(false, preg_match('/like|heart|super.?like/i', $script) === 1);
 });
 
+test('mobile member avatar remains square and does not inherit logo sizing', function () use ($root): void {
+    $page = file_get_contents($root.'/web/app/index.php');
+    $style = file_get_contents($root.'/web/assets/browse.css');
+
+    expect_same(true, str_contains($page, 'class="mobile-logo"'));
+    foreach ([
+        '.mobile-member-actions > img',
+        'width: 34px',
+        'height: 34px',
+        'aspect-ratio: 1',
+        'object-fit: cover',
+        'flex: 0 0 34px',
+    ] as $needle) {
+        expect_same(true, str_contains($style, $needle));
+    }
+    expect_same(false, str_contains($style, '.mobile-bar img:first-child'));
+});
+
 test('browse diagnostic is token protected and aggregate only', function () use ($root): void {
     $source = file_get_contents($root.'/web/diagnostics/browse_status.php');
 

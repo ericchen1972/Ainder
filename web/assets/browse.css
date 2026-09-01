@@ -318,9 +318,16 @@ a { font: inherit; }
         padding: 10px 14px;
         background: #111219;
     }
-    .mobile-bar img:first-child { width: 110px; height: auto; }
+    .mobile-logo { width: 110px; height: auto; flex: none; }
     .mobile-member-actions { display: flex; align-items: center; gap: 10px; }
-    .mobile-member-actions > img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .mobile-member-actions > img {
+        width: 34px;
+        height: 34px;
+        aspect-ratio: 1;
+        flex: 0 0 34px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
     .candidate-stack { width: 100%; height: calc(100dvh - 58px); aspect-ratio: auto; }
     .candidate-card { border: 0; border-radius: 0; box-shadow: none; }
     .candidate-copy { bottom: calc(28px + env(safe-area-inset-bottom)); }

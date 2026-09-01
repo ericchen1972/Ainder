@@ -91,7 +91,7 @@ $avatarPath = $avatarPath !== ''
 
     <section class="browse-stage" aria-label="候選會員">
         <header class="mobile-bar">
-            <img src="/ainder/assets/ainder-logo-white.webp" alt="Ainder">
+            <img class="mobile-logo" src="/ainder/assets/ainder-logo-white.webp" alt="Ainder">
             <div class="mobile-member-actions">
                 <img src="<?= $escape($avatarPath) ?>" alt="會員資料">
                 <form class="logout-form" method="post" action="/ainder/logout.php">

@@ -60,6 +60,28 @@ test('app page loads confirmed Profile WebMCP tool', function () use ($webmcpRoo
     expect_same(true, str_contains($page, 'webmcp-app.js'));
     expect_same(true, str_contains($page, 'ainder-csrf-token'));
     expect_same(true, str_contains($tools, 'upsert_my_agent_profile'));
+    expect_same(true, str_contains($tools, 'confirm that their personal information is correct'));
+    expect_same(true, str_contains($tools, 'Do not show profile_text by default'));
+    expect_same(false, str_contains($tools, 'Show the proposed Profile text'));
+});
+
+test('app WebMCP mirrors visible candidate and photo navigation', function () use ($webmcpRoot): void {
+    $tools = file_get_contents($webmcpRoot.'/web/assets/webmcp-app.js');
+    $browse = file_get_contents($webmcpRoot.'/web/assets/browse.js');
+
+    foreach ([
+        'get_current_candidate',
+        'browse_candidates',
+        'change_candidate_photo',
+        "enum: ['next', 'previous']",
+        'ainderBrowseController',
+        'getCurrentCandidate',
+        'browseCandidates',
+        'changeCandidatePhoto',
+        'PHOTO_NAVIGATION_UNAVAILABLE',
+    ] as $needle) {
+        expect_same(true, str_contains($tools.$browse, $needle));
+    }
 });
 
 test('browse tools bind evaluation and Like to the current card', function () use ($webmcpRoot): void {
