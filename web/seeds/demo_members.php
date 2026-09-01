@@ -10,7 +10,6 @@ return array (
     'display_name' => 'Ethan Park',
     'birth_date' => '1992-04-18',
     'gender' => 'male',
-    'basic_intro' => 'Software engineer in Taipei. Quiet weekends.',
     'is_demo' => true,
     'cohort' => 'asian_male',
     'photos' => 
@@ -48,7 +47,6 @@ return array (
     'display_name' => 'Daniel Kim',
     'birth_date' => '1987-11-03',
     'gender' => 'male',
-    'basic_intro' => 'Product manager who plans trips around good food.',
     'is_demo' => true,
     'cohort' => 'asian_male',
     'photos' => 
@@ -86,7 +84,6 @@ return array (
     'display_name' => 'Adrian Lee',
     'birth_date' => '1996-01-22',
     'gender' => 'male',
-    'basic_intro' => 'Architect interested in cities, music, and design.',
     'is_demo' => true,
     'cohort' => 'asian_male',
     'photos' => 
@@ -124,7 +121,6 @@ return array (
     'display_name' => 'Noah Chen',
     'birth_date' => '1978-06-14',
     'gender' => 'male',
-    'basic_intro' => 'Data analyst balancing fitness and quiet routines.',
     'is_demo' => true,
     'cohort' => 'asian_male',
     'photos' => 
@@ -162,7 +158,6 @@ return array (
     'display_name' => 'Marcus Tan',
     'birth_date' => '1984-09-29',
     'gender' => 'male',
-    'basic_intro' => 'Creative director drawn to photography and spaces.',
     'is_demo' => true,
     'cohort' => 'asian_male',
     'photos' => 
@@ -200,7 +195,6 @@ return array (
     'display_name' => 'Maya Zhou',
     'birth_date' => '1994-02-07',
     'gender' => 'female',
-    'basic_intro' => 'UX researcher, reader, and devoted animal person.',
     'is_demo' => true,
     'cohort' => 'asian_female',
     'photos' => 
@@ -238,7 +232,6 @@ return array (
     'display_name' => 'Chloe Park',
     'birth_date' => '1989-07-26',
     'gender' => 'female',
-    'basic_intro' => 'Marketing strategist who likes active weekends.',
     'is_demo' => true,
     'cohort' => 'asian_female',
     'photos' => 
@@ -276,7 +269,6 @@ return array (
     'display_name' => 'Olivia Chen',
     'birth_date' => '1998-05-12',
     'gender' => 'female',
-    'basic_intro' => 'Interior designer who enjoys calm spaces.',
     'is_demo' => true,
     'cohort' => 'asian_female',
     'photos' => 
@@ -314,7 +306,6 @@ return array (
     'display_name' => 'Natalie Kim',
     'birth_date' => '1975-12-19',
     'gender' => 'female',
-    'basic_intro' => 'Consultant who values hiking and shared meals.',
     'is_demo' => true,
     'cohort' => 'asian_female',
     'photos' => 
@@ -352,7 +343,6 @@ return array (
     'display_name' => 'Grace Liu',
     'birth_date' => '1982-03-30',
     'gender' => 'female',
-    'basic_intro' => 'Illustrator inspired by animals and color.',
     'is_demo' => true,
     'cohort' => 'asian_female',
     'photos' => 
@@ -390,7 +380,6 @@ return array (
     'display_name' => 'Liam Carter',
     'birth_date' => '1991-08-15',
     'gender' => 'male',
-    'basic_intro' => 'Civil engineer happiest outdoors and on the move.',
     'is_demo' => true,
     'cohort' => 'western_male',
     'photos' => 
@@ -428,7 +417,6 @@ return array (
     'display_name' => 'Owen Brooks',
     'birth_date' => '1986-10-08',
     'gender' => 'male',
-    'basic_intro' => 'Writer at home in cafes and unfamiliar cities.',
     'is_demo' => true,
     'cohort' => 'western_male',
     'photos' => 
@@ -466,7 +454,6 @@ return array (
     'display_name' => 'Julian Reed',
     'birth_date' => '1997-06-02',
     'gender' => 'male',
-    'basic_intro' => 'Chef interested in markets and road trips.',
     'is_demo' => true,
     'cohort' => 'western_male',
     'photos' => 
@@ -504,7 +491,6 @@ return array (
     'display_name' => 'Henry Collins',
     'birth_date' => '1973-04-11',
     'gender' => 'male',
-    'basic_intro' => 'Financial planner focused on health and balance.',
     'is_demo' => true,
     'cohort' => 'western_male',
     'photos' => 
@@ -542,7 +528,6 @@ return array (
     'display_name' => 'Victor Hayes',
     'birth_date' => '1980-01-27',
     'gender' => 'male',
-    'basic_intro' => 'Film editor who notices ordinary details.',
     'is_demo' => true,
     'cohort' => 'western_male',
     'photos' => 
@@ -580,7 +565,6 @@ return array (
     'display_name' => 'Emma Blake',
     'birth_date' => '1993-03-11',
     'gender' => 'female',
-    'basic_intro' => 'Landscape architect who prefers nature to crowds.',
     'is_demo' => true,
     'cohort' => 'western_female',
     'photos' => 
@@ -618,7 +602,6 @@ return array (
     'display_name' => 'Sophia Reed',
     'birth_date' => '1988-08-21',
     'gender' => 'female',
-    'basic_intro' => 'Museum educator drawn to art and slow travel.',
     'is_demo' => true,
     'cohort' => 'western_female',
     'photos' => 
@@ -656,7 +639,6 @@ return array (
     'display_name' => 'Claire Bennett',
     'birth_date' => '1999-02-16',
     'gender' => 'female',
-    'basic_intro' => 'Veterinarian with a soft spot for quiet weekends.',
     'is_demo' => true,
     'cohort' => 'western_female',
     'photos' => 
@@ -694,7 +676,6 @@ return array (
     'display_name' => 'Hannah Moore',
     'birth_date' => '1976-05-05',
     'gender' => 'female',
-    'basic_intro' => 'Brand designer who enjoys cities and good coffee.',
     'is_demo' => true,
     'cohort' => 'western_female',
     'photos' => 
@@ -732,7 +713,6 @@ return array (
     'display_name' => 'Evelyn Grant',
     'birth_date' => '1983-12-01',
     'gender' => 'female',
-    'basic_intro' => 'Physiotherapist focused on movement and balance.',
     'is_demo' => true,
     'cohort' => 'western_female',
     'photos' => 

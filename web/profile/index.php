@@ -25,7 +25,6 @@ $maximumBirthDate = (new DateTimeImmutable('today'))->modify('-18 years')->forma
 $displayName = trim((string) ($old['display_name'] ?? $identity['display_name'] ?? ''));
 $birthDate = (string) ($old['birth_date'] ?? '');
 $gender = (string) ($old['gender'] ?? '');
-$basicIntro = trim((string) ($old['basic_intro'] ?? ''));
 
 function ainder_field_error(array $errors, string $field): string
 {
@@ -88,19 +87,6 @@ function ainder_field_error(array $errors, string $field): string
                         <span>生日 <b>*</b></span>
                         <input type="date" name="birth_date" value="<?= htmlspecialchars($birthDate, ENT_QUOTES, 'UTF-8') ?>" max="<?= $maximumBirthDate ?>" required>
                         <?= ainder_field_error($errors, 'birth_date') ?>
-                    </label>
-
-                    <label class="form-field">
-                        <span>基本資料 <b>*</b></span>
-                        <input
-                            type="text"
-                            name="basic_intro"
-                            value="<?= htmlspecialchars($basicIntro, ENT_QUOTES, 'UTF-8') ?>"
-                            maxlength="50"
-                            placeholder="工作、居住地等短文字介紹（50字內）"
-                            required
-                        >
-                        <?= ainder_field_error($errors, 'basic_intro') ?>
                     </label>
 
                     <fieldset class="gender-field">

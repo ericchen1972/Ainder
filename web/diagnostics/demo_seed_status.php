@@ -62,11 +62,6 @@ try {
             .'INNER JOIN users u ON u.id = a.user_id '
             .'WHERE u.is_demo = 1 AND a.expires_at > NOW()'
         ),
-        'invalid_intro_count' => $count(
-            $database,
-            "SELECT COUNT(*) FROM users WHERE is_demo = 1 "
-            ."AND (TRIM(basic_intro) = '' OR CHAR_LENGTH(basic_intro) > 50)"
-        ),
         'non_unsplash_demo_photo_count' => $count(
             $database,
             "SELECT COUNT(*) FROM user_photos p "

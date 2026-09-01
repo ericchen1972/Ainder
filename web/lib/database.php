@@ -48,24 +48,22 @@ function ainder_create_member_with_photos(
     $displayName = trim((string) $input['display_name']);
     $birthDate = (string) $input['birth_date'];
     $gender = (string) $input['gender'];
-    $basicIntro = trim((string) $input['basic_intro']);
 
     $database->begin_transaction();
 
     try {
         $userStatement = $database->prepare(
             'INSERT INTO users '
-            .'(google_sub, email, display_name, birth_date, gender, basic_intro) '
-            .'VALUES (?, ?, ?, ?, ?, ?)'
+            .'(google_sub, email, display_name, birth_date, gender) '
+            .'VALUES (?, ?, ?, ?, ?)'
         );
         $userStatement->bind_param(
-            'ssssss',
+            'sssss',
             $googleSub,
             $email,
             $displayName,
             $birthDate,
-            $gender,
-            $basicIntro
+            $gender
         );
         $userStatement->execute();
         $memberId = (int) $database->insert_id;

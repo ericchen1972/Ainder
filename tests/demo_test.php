@@ -78,7 +78,6 @@ test('public candidates exclude Agent Profile fields', function (): void {
         'display_name' => 'Emma Blake',
         'birth_date' => '1998-03-11',
         'gender' => 'female',
-        'basic_intro' => 'Architect in Taipei. Books and quiet cafes.',
         'is_demo' => 1,
         'profile_text' => 'Private Agent observation',
         'agent_known_duration_days' => 400,
@@ -88,6 +87,7 @@ test('public candidates exclude Agent Profile fields', function (): void {
     expect_same(false, array_key_exists('profile_text', $public));
     expect_same(false, array_key_exists('agent_known_duration_days', $public));
     expect_same(false, array_key_exists('interaction_density', $public));
+    expect_same(false, array_key_exists('basic_intro', $public));
     expect_same(true, $public['is_demo']);
     expect_same(1, count($public['photos']));
 });
@@ -136,7 +136,7 @@ test('frozen Demo manifest contains the exact approved cohort', function (): voi
     $manifestPhotoIds = [];
     foreach ($manifest as $member) {
         expect_same(2, count($member['photos']));
-        expect_same(true, mb_strlen($member['basic_intro'], 'UTF-8') <= 50);
+        expect_same(false, array_key_exists('basic_intro', $member));
         expect_same(true, $member['is_demo']);
 
         foreach ($member['photos'] as $photo) {

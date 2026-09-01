@@ -91,7 +91,6 @@ function ainder_public_candidate_payload(array $member, array $photos): array
         'display_name' => (string) ($member['display_name'] ?? ''),
         'birth_date' => (string) ($member['birth_date'] ?? ''),
         'gender' => (string) ($member['gender'] ?? ''),
-        'basic_intro' => (string) ($member['basic_intro'] ?? ''),
         'is_demo' => (int) ($member['is_demo'] ?? 0) === 1,
         'photos' => array_values($photos),
     ];
@@ -137,16 +136,12 @@ function ainder_validate_demo_manifest(
             $errors[] = "{$label} has an invalid Demo email.";
         }
 
-        foreach (['display_name', 'basic_intro'] as $field) {
+        foreach (['display_name'] as $field) {
             $value = trim((string) ($member[$field] ?? ''));
             if ($value === '' || preg_match('/^[\x20-\x7E]+$/D', $value) !== 1) {
                 $errors[] = "{$label} has invalid English {$field}.";
             }
         }
-        if (mb_strlen((string) ($member['basic_intro'] ?? ''), 'UTF-8') > 50) {
-            $errors[] = "{$label} introduction is too long.";
-        }
-
         $gender = (string) ($member['gender'] ?? '');
         if (!in_array($gender, ['male', 'female'], true)) {
             $errors[] = "{$label} has an invalid gender.";
@@ -288,27 +283,24 @@ function ainder_upsert_demo_user(mysqli $database, array $member): int
     $displayName = (string) $member['display_name'];
     $birthDate = (string) $member['birth_date'];
     $gender = (string) $member['gender'];
-    $basicIntro = (string) $member['basic_intro'];
     $isDemo = 1;
 
     $statement = $database->prepare(
         'INSERT INTO users '
-        .'(google_sub, email, display_name, birth_date, gender, basic_intro, is_demo) '
-        .'VALUES (?, ?, ?, ?, ?, ?, ?) '
+        .'(google_sub, email, display_name, birth_date, gender, is_demo) '
+        .'VALUES (?, ?, ?, ?, ?, ?) '
         .'ON DUPLICATE KEY UPDATE '
         .'id = LAST_INSERT_ID(id), email = VALUES(email), '
         .'display_name = VALUES(display_name), birth_date = VALUES(birth_date), '
-        .'gender = VALUES(gender), basic_intro = VALUES(basic_intro), '
-        .'is_demo = 1, status = \'active\''
+        .'gender = VALUES(gender), is_demo = 1, status = \'active\''
     );
     $statement->bind_param(
-        'ssssssi',
+        'sssssi',
         $googleSub,
         $email,
         $displayName,
         $birthDate,
         $gender,
-        $basicIntro,
         $isDemo
     );
     $statement->execute();

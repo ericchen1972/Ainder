@@ -114,7 +114,6 @@ test('second migration adds demo photo sources and private Agent Profiles', func
     $source = file_get_contents($root.'/web/migrations/002_add_demo_members.php');
 
     foreach ([
-        'basic_intro VARCHAR(50)',
         'is_demo TINYINT(1)',
         "source_type ENUM('local', 'unsplash')",
         'source_photo_id VARCHAR(64)',
@@ -142,7 +141,6 @@ test('Demo production diagnostic exposes only aggregate validation data', functi
         'demo_agent_profiles',
         'members_with_two_photos',
         'fresh_profiles',
-        'invalid_intro_count',
         'non_unsplash_demo_photo_count',
     ] as $needle) {
         expect_same(true, str_contains($source, $needle));
@@ -150,5 +148,26 @@ test('Demo production diagnostic exposes only aggregate validation data', functi
 
     foreach (['profile_text', 'google_sub', 'unsplash_access_key'] as $forbidden) {
         expect_same(false, str_contains($source, $forbidden));
+    }
+});
+
+test('third migration and current runtime remove basic info completely', function () use ($root): void {
+    $migration = file_get_contents(
+        $root.'/web/migrations/003_remove_basic_intro.php'
+    );
+    expect_same(true, str_contains($migration, 'DROP COLUMN basic_intro'));
+    expect_same(true, str_contains($migration, 'information_schema.COLUMNS'));
+
+    foreach ([
+        'web/lib/registration.php',
+        'web/lib/database.php',
+        'web/profile/index.php',
+        'web/profile/register.php',
+        'web/lib/demo.php',
+        'web/seeds/demo_members.php',
+        'web/diagnostics/demo_seed_status.php',
+    ] as $relativePath) {
+        $source = file_get_contents($root.'/'.$relativePath);
+        expect_same(false, str_contains($source, 'basic_intro'));
     }
 });
