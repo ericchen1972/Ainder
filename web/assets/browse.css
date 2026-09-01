@@ -210,7 +210,7 @@ a { font: inherit; }
     position: relative;
     min-width: 0;
     display: grid;
-    grid-template-columns: 74px minmax(0, 1fr) 30px;
+    grid-template-columns: 74px minmax(0, 1fr) 26px;
     gap: 10px;
     min-height: 122px;
     padding: 10px;
@@ -232,8 +232,8 @@ a { font: inherit; }
 .match-card-heading strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
 .match-card-age { color: #9a9daa; font-size: 11px; }
 .match-card-close {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     display: grid;
     place-items: center;
     padding: 0;
@@ -481,7 +481,7 @@ a { font: inherit; }
 }
 
 .mobile-bar,
-.mobile-tabs { display: none; }
+.mobile-destination-nav { display: none; }
 
 .candidate-stack {
     position: relative;
@@ -667,10 +667,23 @@ a { font: inherit; }
 @media (max-width: 720px) {
     .candidate-browser { display: block; }
     .browse-sidebar { display: none; }
+    .candidate-browser[data-mobile-destination="likes"] .browse-sidebar,
+    .candidate-browser[data-mobile-destination="messages"] .browse-sidebar {
+        position: fixed;
+        z-index: 8;
+        inset: 58px 0 calc(58px + env(safe-area-inset-bottom));
+        display: block;
+        min-height: 0;
+        overflow-y: auto;
+        border: 0;
+    }
+    .candidate-browser.is-conversation .browse-sidebar { display: none; }
+    .browse-sidebar .member-bar,
+    .browse-sidebar .sidebar-tabs { display: none; }
+    .browse-sidebar .sidebar-panel { min-height: 100%; }
     .browse-stage { min-height: 100dvh; display: block; padding: 0; background: #0b0c11; }
     .browse-content { min-height: 0; display: block; }
-    .mobile-bar,
-    .mobile-tabs { width: 100%; }
+    .mobile-bar { width: 100%; }
     .mobile-bar {
         position: relative;
         z-index: 10;
@@ -689,38 +702,54 @@ a { font: inherit; }
         aspect-ratio: 1;
         flex: 0 0 34px;
     }
-    .mobile-tabs {
-        height: 44px;
-        display: flex;
-        align-items: end;
-        gap: 24px;
-        padding: 0 18px;
+    .mobile-destination-nav {
+        position: fixed;
+        z-index: 12;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: calc(58px + env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        padding-bottom: env(safe-area-inset-bottom);
+        border-top: 1px solid #292b36;
         background: #111219;
-        border-bottom: 1px solid #292b36;
     }
-    .mobile-tabs button {
-        height: 44px;
-        padding: 0 0 10px;
+    .mobile-destination-nav button {
+        position: relative;
+        display: grid;
+        place-items: center;
+        padding: 0;
         border: 0;
-        border-bottom: 2px solid transparent;
         background: none;
-        color: #9a9daa;
-        font: inherit;
-        font-size: 13px;
-        font-weight: 800;
+        color: #858896;
+        cursor: pointer;
     }
-    .mobile-tabs button[aria-selected="true"] {
-        color: #fff;
-        border-color: #e84d7d;
+    .mobile-destination-nav button::before {
+        position: absolute;
+        top: 0;
+        left: 30%;
+        right: 30%;
+        height: 2px;
+        border-radius: 0 0 2px 2px;
+        background: transparent;
+        content: '';
     }
-    .candidate-stack { width: 100%; height: calc(100dvh - 102px); aspect-ratio: auto; }
-    .message-view { top: 102px; height: calc(100dvh - 102px); }
+    .mobile-destination-nav button[aria-selected="true"] { color: #e84d7d; }
+    .mobile-destination-nav button[aria-selected="true"]::before { background: #e84d7d; }
+    .mobile-destination-nav svg { width: 24px; height: 24px; fill: currentColor; }
+    .candidate-stack { width: 100%; height: calc(100dvh - 116px - env(safe-area-inset-bottom)); aspect-ratio: auto; }
+    .message-view {
+        top: 58px;
+        bottom: calc(58px + env(safe-area-inset-bottom));
+        height: auto;
+    }
     .message-header { min-height: 58px; padding: 10px 14px; }
     .message-thread { padding: 14px; }
     .message-composer { padding: 10px 10px calc(10px + env(safe-area-inset-bottom)); }
     .message-send { padding: 0 13px; }
     .candidate-card { border: 0; border-radius: 0; box-shadow: none; }
-    .candidate-copy { bottom: calc(28px + env(safe-area-inset-bottom)); }
+    .candidate-copy { bottom: 28px; }
     .candidate-age { font-size: 17px; }
     .browse-hint { display: none; }
     .profile-editor-modal { width: 100%; max-width: none; max-height: 100dvh; height: 100dvh; border: 0; border-radius: 0; }

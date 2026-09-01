@@ -241,7 +241,7 @@ test('authenticated app renders the approved public browse surface', function ()
         'ainder_find_browse_member',
         'ainder_list_browse_candidates',
         'candidate-browser',
-        'Agent Likes',
+        '>Likes<',
         'Messages',
         'data-candidate-id',
         'data-current-candidate-id',
@@ -378,24 +378,33 @@ test('mobile member avatar remains square and does not inherit logo sizing', fun
     expect_same(false, str_contains($style, '.mobile-bar img:first-child'));
 });
 
-test('mobile navigation keeps Agent Likes and Messages visible', function () use ($root): void {
+test('mobile navigation uses three Font Awesome icon destinations', function () use ($root): void {
     $page = file_get_contents($root.'/web/app/index.php');
     $style = file_get_contents($root.'/web/assets/browse.css');
 
-    expect_same(true, str_contains($page, 'class="mobile-tabs"'));
-    expect_same(2, substr_count($page, '>Agent Likes<'));
-    expect_same(2, substr_count($page, '>Messages<'));
+    expect_same(true, str_contains($page, 'class="mobile-destination-nav"'));
+    expect_same(false, str_contains($page, '>Agent Likes<'));
+    foreach (['Slide', 'Likes', 'Messages'] as $label) {
+        expect_same(true, str_contains($page, 'aria-label="'.$label.'"'));
+    }
+    foreach (['fire-flame-curved', 'heart', 'comment-dots'] as $icon) {
+        expect_same(true, str_contains($page, 'data-fa-icon="'.$icon.'"'));
+    }
+    foreach (['slide', 'likes', 'messages'] as $destination) {
+        expect_same(true, str_contains(
+            $page,
+            'data-destination="'.$destination.'"'
+        ));
+    }
     foreach ([
-        '.mobile-tabs',
-        'height: 44px',
-        'height: calc(100dvh - 102px)',
+        '.mobile-destination-nav',
+        'position: fixed',
+        'bottom: 0',
+        'width: 24px',
+        'height: 24px',
     ] as $needle) {
         expect_same(true, str_contains($style, $needle));
     }
-    expect_same(true, str_contains(
-        $style,
-        ".mobile-bar,\n    .mobile-tabs { width: 100%; }"
-    ));
 });
 
 test('desktop Agent Likes renders actionable pending Like rows', function () use ($root): void {
@@ -458,6 +467,9 @@ test('Messages renders Match cards opinion modal and persistent composer', funct
     ] as $needle) {
         expect_same(true, str_contains($script, $needle));
     }
+    expect_same(true, str_contains($style, '-webkit-line-clamp: 3'));
+    expect_same(true, str_contains($style, '.match-card-close'));
+    expect_same(true, str_contains($style, 'width: 24px'));
     expect_same(false, str_contains($page, 'Chloe Park'));
 });
 

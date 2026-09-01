@@ -16,6 +16,7 @@ const messageThread = document.querySelector('.message-thread');
 const messageComposer = document.querySelector('.message-composer');
 const messageInput = messageComposer?.querySelector('input[name="message"]');
 const opinionModal = document.querySelector('.opinion-modal');
+const mobileQuery = window.matchMedia('(max-width: 720px)');
 let candidateIndex = 0;
 let pointerStart = null;
 let pointerDelta = 0;
@@ -139,6 +140,33 @@ function setActiveTab(tab) {
   });
 }
 
+function setMobileDestination(destination) {
+  if (!browser) return;
+  browser.dataset.mobileDestination = destination;
+  browser.classList.remove('is-conversation');
+  document.querySelectorAll('[data-destination]').forEach((button) => {
+    button.setAttribute(
+      'aria-selected',
+      String(button.dataset.destination === destination),
+    );
+  });
+
+  if (destination === 'slide') {
+    document.querySelectorAll('[data-panel]').forEach((panel) => {
+      panel.hidden = true;
+    });
+    browseContent?.removeAttribute('hidden');
+    if (messageView) messageView.hidden = true;
+    window.history.replaceState({}, '', '/ainder/app/');
+    return;
+  }
+
+  setActiveTab(destination);
+  browseContent?.setAttribute('hidden', '');
+  if (messageView) messageView.hidden = true;
+  window.history.replaceState({}, '', '/ainder/app/');
+}
+
 function renderMessages(messages) {
   if (!messageThread) return;
   messageThread.replaceChildren();
@@ -157,6 +185,14 @@ async function openMessageView(matchId, name, age) {
   if (!messageView || !Number.isInteger(id) || id < 1) return;
 
   setActiveTab('messages');
+  browser?.classList.add('is-conversation');
+  if (browser) browser.dataset.mobileDestination = 'messages';
+  document.querySelectorAll('[data-destination]').forEach((button) => {
+    button.setAttribute(
+      'aria-selected',
+      String(button.dataset.destination === 'messages'),
+    );
+  });
   browseContent?.setAttribute('hidden', '');
   messageView.hidden = false;
   messageView.dataset.matchId = String(id);
@@ -173,6 +209,11 @@ async function openMessageView(matchId, name, age) {
 function closeMessageView() {
   if (messageView) messageView.hidden = true;
   browseContent?.removeAttribute('hidden');
+  browser?.classList.remove('is-conversation');
+  if (mobileQuery.matches) {
+    setMobileDestination('slide');
+    return;
+  }
   window.history.replaceState({}, '', '/ainder/app/');
 }
 
@@ -278,6 +319,7 @@ cards.forEach((card) => {
 document.querySelectorAll('.agent-like-target').forEach((target) => {
   target.addEventListener('click', () => {
     showCandidate(Number(target.dataset.candidateId));
+    if (mobileQuery.matches) setMobileDestination('slide');
   });
 });
 
@@ -302,7 +344,13 @@ document.querySelectorAll('.agent-like-remove').forEach((button) => {
 document.querySelectorAll('[data-tab]').forEach((button) => {
   button.addEventListener('click', () => {
     setActiveTab(button.dataset.tab);
-    if (button.dataset.tab === 'agent-likes') closeMessageView();
+    if (button.dataset.tab === 'likes') closeMessageView();
+  });
+});
+
+document.querySelectorAll('[data-destination]').forEach((button) => {
+  button.addEventListener('click', () => {
+    setMobileDestination(button.dataset.destination);
   });
 });
 
@@ -433,6 +481,39 @@ stack?.addEventListener('click', (event) => {
 
 setCurrentCandidate(0);
 
+if (mobileQuery.matches) {
+  if (messageView && !messageView.hidden) {
+    browser?.classList.add('is-conversation');
+    if (browser) browser.dataset.mobileDestination = 'messages';
+  } else {
+    setMobileDestination('slide');
+  }
+}
+
+mobileQuery.addEventListener('change', (event) => {
+  if (event.matches) {
+    if (messageView && !messageView.hidden) {
+      browser?.classList.add('is-conversation');
+      if (browser) browser.dataset.mobileDestination = 'messages';
+      document.querySelectorAll('[data-destination]').forEach((button) => {
+        button.setAttribute(
+          'aria-selected',
+          String(button.dataset.destination === 'messages'),
+        );
+      });
+      return;
+    }
+    setMobileDestination('slide');
+    return;
+  }
+
+  browser?.classList.remove('is-conversation');
+  if (browser) delete browser.dataset.mobileDestination;
+  browseContent?.removeAttribute('hidden');
+  const selectedTab = document.querySelector('[data-tab][aria-selected="true"]');
+  setActiveTab(selectedTab?.dataset.tab ?? 'likes');
+});
+
 globalThis.ainderBrowseController = Object.freeze({
   getCurrentCandidate: () => candidateSnapshot(),
   browseCandidates,
@@ -442,4 +523,5 @@ globalThis.ainderBrowseController = Object.freeze({
   removeIncomingLike,
   openMessageView,
   closeMessageView,
+  setMobileDestination,
 });
