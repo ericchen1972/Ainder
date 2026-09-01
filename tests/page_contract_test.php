@@ -171,3 +171,37 @@ test('third migration and current runtime remove basic info completely', functio
         expect_same(false, str_contains($source, 'basic_intro'));
     }
 });
+
+test('authenticated app renders the approved public browse surface', function () use ($root): void {
+    $source = file_get_contents($root.'/web/app/index.php');
+
+    foreach ([
+        'ainder_member_id',
+        'ainder_find_browse_member',
+        'ainder_list_browse_candidates',
+        'candidate-browser',
+        'Agent Likes',
+        'Messages',
+        'data-candidate-id',
+        'data-current-candidate-id',
+        'browse.css?v=',
+        'browse-model.mjs?v=',
+        'browse.js?v=',
+        'aria-live',
+        'Photo by',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+
+    foreach ([
+        'profile_text',
+        'basic_intro',
+        'agent_known_duration_days',
+        'interaction_density',
+        'compatibility',
+        'like_candidate',
+        'LIKE',
+    ] as $forbidden) {
+        expect_same(false, str_contains($source, $forbidden));
+    }
+});
