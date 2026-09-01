@@ -205,3 +205,33 @@ test('authenticated app renders the approved public browse surface', function ()
         expect_same(false, str_contains($source, $forbidden));
     }
 });
+
+test('browse assets implement gestures looping and responsive layout', function () use ($root): void {
+    $script = file_get_contents($root.'/web/assets/browse.js');
+    $style = file_get_contents($root.'/web/assets/browse.css');
+
+    foreach ([
+        'pointerdown',
+        'pointermove',
+        'pointerup',
+        'ArrowLeft',
+        'ArrowRight',
+        'candidateStepForDrag',
+        'data-current-candidate-id',
+        'prefers-reduced-motion',
+    ] as $needle) {
+        expect_same(true, str_contains($script.$style, $needle));
+    }
+
+    foreach ([
+        '.browse-sidebar',
+        '.candidate-card',
+        '.mobile-bar',
+        '@media (max-width: 720px)',
+        'overflow-x: hidden',
+    ] as $needle) {
+        expect_same(true, str_contains($style, $needle));
+    }
+
+    expect_same(false, preg_match('/like|heart|super.?like/i', $script) === 1);
+});
