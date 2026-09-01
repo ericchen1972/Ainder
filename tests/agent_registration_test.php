@@ -67,3 +67,13 @@ test('Agent endpoints separate WebMCP JSON from signed image bytes', function ()
     expect_same(true, str_contains($submit, 'ainder_complete_agent_registration'));
     expect_same(false, str_contains($submit, '$_FILES'));
 });
+
+test('expired Agent uploads have a token-protected cleanup entrypoint', function (): void {
+    $source = file_get_contents(
+        dirname(__DIR__).'/web/maintenance/cleanup_agent_uploads.php'
+    );
+    expect_same(true, str_contains($source, 'migration_token'));
+    expect_same(true, str_contains($source, 'agent_registration_uploads'));
+    expect_same(true, str_contains($source, 'agent_registration_sessions'));
+    expect_same(true, str_contains($source, 'ainder_cleanup_photo_paths'));
+});
