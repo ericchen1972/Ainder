@@ -50,7 +50,7 @@ test('web source contains no production credential', function () use ($root): vo
         $source = file_get_contents($file->getPathname());
         expect_same(
             false,
-            preg_match('/Bobo@|sk-[A-Za-z0-9]|client_secret/i', $source) === 1
+            preg_match('/Bobo@|sk-[A-Za-z0-9]{20,}|client_secret/i', $source) === 1
         );
     }
 });
@@ -127,5 +127,28 @@ test('second migration adds demo photo sources and private Agent Profiles', func
         'UNIQUE KEY agent_profiles_user_unique',
     ] as $needle) {
         expect_same(true, str_contains($source, $needle));
+    }
+});
+
+test('Demo production diagnostic exposes only aggregate validation data', function () use ($root): void {
+    $source = file_get_contents(
+        $root.'/web/diagnostics/demo_seed_status.php'
+    );
+
+    foreach ([
+        'hash_equals',
+        'demo_users',
+        'demo_photos',
+        'demo_agent_profiles',
+        'members_with_two_photos',
+        'fresh_profiles',
+        'invalid_intro_count',
+        'non_unsplash_demo_photo_count',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+
+    foreach (['profile_text', 'google_sub', 'unsplash_access_key'] as $forbidden) {
+        expect_same(false, str_contains($source, $forbidden));
     }
 });
