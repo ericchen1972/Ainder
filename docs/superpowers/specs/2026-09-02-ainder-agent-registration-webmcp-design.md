@@ -41,7 +41,7 @@ Ainder supports two registration experiences over one member model and one share
 - The client must support top-level JavaScript WebMCP tools and direct byte upload to a signed URL.
 - The Agent does not read, fill, or submit the manual HTML form.
 - The Agent gathers the required data from memory and the current conversation, asks only for missing information, and obtains the required images.
-- The Agent presents the complete registration draft to the user and performs no write until the user confirms.
+- The Agent presents the complete public registration draft, discloses that a private Agent Profile will also be created, and performs no write until the user confirms the public data, photos, and private-Profile creation.
 - Successful Agent registration atomically creates the member, processed photos, and Agent Profile.
 
 Registration source does not permanently classify the member. Current Agent Profile state, not the original registration path, determines access to evaluation and Like.
@@ -60,28 +60,28 @@ The Google subject and email always come from the verified pending server sessio
 
 Agent registration additionally requires:
 
-- `profile_text`: the Agent-authored description approved by the user;
+- `profile_text`: the Agent-authored private description grounded only in the conversation and memory actually available to the Agent;
 - `agent_known_duration_days`: the Agent's estimate of how long it has known the user;
 - `interaction_density`: `low`, `medium`, or `high`;
 - generation time used to calculate a three-calendar-month expiry.
 
-The user reviews and can request changes to `profile_text` before submission. Familiarity duration and interaction density are submitted as hidden context and are not exposed as editable website fields.
+`profile_text`, familiarity duration, and interaction density are private Agent context. They are not exposed as editable website fields and are not shown by default during registration. The Agent must not invent missing evidence, but registration does not require the user to review or approve the Profile wording.
 
 ## Agent Conversation Contract
 
 When the user asks the Agent to register for Ainder:
 
-1. Summarize all known required registration fields and the proposed Agent Profile.
+1. Summarize the public registration fields: display name, birth date, gender, designated main photo, and supporting-photo order.
 2. Ask for each missing required field without inventing an answer.
 3. Request 2–6 images if the user has not supplied enough.
 4. Require the user to designate one supplied image as the main photo.
 5. If the user has not designated a main photo, ask which image should be first. The Agent must not choose silently.
 6. Validate the designated main photo and perform a basic inappropriate-content check over all supplied images.
-7. Present the final text data, Profile text, main photo, and supporting-photo order.
-8. Ask for a single explicit confirmation covering the complete registration submission.
+7. Present the final public registration data, main photo, and supporting-photo order without showing `profile_text`, familiarity duration, or interaction density by default.
+8. Tell the user that registration also creates a private Agent Profile from the Agent's actually available conversation and memory, then ask for a single explicit confirmation covering the public data, photos, and consent to create and store that private Profile.
 9. Begin the WebMCP and signed-upload writes only after confirmation.
 
-If the user changes any confirmed field or image, present the revised final set and obtain confirmation again.
+If the user changes any confirmed public field or image, present the revised final set and obtain confirmation again. The Agent may show the private Profile only when the user explicitly asks to see it.
 
 ## Main Photo and Content Rules
 
@@ -158,7 +158,7 @@ This WebMCP write tool accepts:
 - registration session identifier;
 - display name, birth date, and gender;
 - ordered `upload_id` values;
-- approved Agent Profile text;
+- private Agent Profile text grounded in the Agent's actually available conversation and memory;
 - Agent familiarity duration and interaction density;
 - the same logical idempotency key.
 
@@ -286,7 +286,7 @@ Live verification must demonstrate:
 ## Acceptance Criteria
 
 - Agent registration uses WebMCP for text and signed upload URLs for image bytes, never the manual form.
-- The user confirms the complete Agent registration draft before any write.
+- The user confirms the complete public registration data, photo order, and consent to create and store a private Agent Profile before any write; Profile contents remain hidden by default.
 - Agent registration atomically creates member, 2–6 processed photos, and Agent Profile.
 - Manual registration remains available and creates no Agent Profile.
 - Both upload paths produce centered-crop 720 × 1280 WebP member photos through one shared processor.
