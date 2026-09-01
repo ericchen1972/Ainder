@@ -31,6 +31,8 @@ require __DIR__.'/registration_test.php';
 require __DIR__.'/photo_test.php';
 require __DIR__.'/image_processor_test.php';
 require __DIR__.'/signed_upload_test.php';
+require __DIR__.'/agent_profile_test.php';
+require __DIR__.'/agent_registration_test.php';
 require __DIR__.'/profile_contract_test.php';
 require __DIR__.'/candidate_test.php';
 require __DIR__.'/demo_test.php';

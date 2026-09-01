@@ -43,51 +43,17 @@ function ainder_create_member_with_photos(
     array $input,
     callable $createPhotoPaths
 ): int {
-    $googleSub = (string) $identity['google_sub'];
-    $email = (string) $identity['email'];
-    $displayName = trim((string) $input['display_name']);
-    $birthDate = (string) $input['birth_date'];
-    $gender = (string) $input['gender'];
-
     $database->begin_transaction();
 
     try {
-        $userStatement = $database->prepare(
-            'INSERT INTO users '
-            .'(google_sub, email, display_name, birth_date, gender) '
-            .'VALUES (?, ?, ?, ?, ?)'
-        );
-        $userStatement->bind_param(
-            'sssss',
-            $googleSub,
-            $email,
-            $displayName,
-            $birthDate,
-            $gender
-        );
-        $userStatement->execute();
-        $memberId = (int) $database->insert_id;
+        $memberId = ainder_insert_member($database, $identity, $input);
 
         $photoPaths = $createPhotoPaths($memberId);
         if (!is_array($photoPaths) || count($photoPaths) < 2 || count($photoPaths) > 6) {
             throw new RuntimeException('Invalid finalized photo set.');
         }
 
-        $photoStatement = $database->prepare(
-            'INSERT INTO user_photos (user_id, file_path, sort_order, source_type) '
-            .'VALUES (?, ?, ?, \'local\')'
-        );
-        foreach ($photoPaths as $index => $path) {
-            $filePath = (string) $path;
-            $sortOrder = $index + 1;
-            $photoStatement->bind_param(
-                'isi',
-                $memberId,
-                $filePath,
-                $sortOrder
-            );
-            $photoStatement->execute();
-        }
+        ainder_insert_member_photos($database, $memberId, $photoPaths);
 
         $database->commit();
 
@@ -95,5 +61,53 @@ function ainder_create_member_with_photos(
     } catch (Throwable $error) {
         $database->rollback();
         throw $error;
+    }
+}
+
+function ainder_insert_member(
+    mysqli $database,
+    array $identity,
+    array $input
+): int {
+    $googleSub = (string) $identity['google_sub'];
+    $email = (string) $identity['email'];
+    $displayName = trim((string) $input['display_name']);
+    $birthDate = (string) $input['birth_date'];
+    $gender = (string) $input['gender'];
+    $statement = $database->prepare(
+        'INSERT INTO users '
+        .'(google_sub, email, display_name, birth_date, gender) '
+        .'VALUES (?, ?, ?, ?, ?)'
+    );
+    $statement->bind_param(
+        'sssss',
+        $googleSub,
+        $email,
+        $displayName,
+        $birthDate,
+        $gender
+    );
+    $statement->execute();
+
+    return (int) $database->insert_id;
+}
+
+function ainder_insert_member_photos(
+    mysqli $database,
+    int $memberId,
+    array $photoPaths
+): void {
+    if (count($photoPaths) < 2 || count($photoPaths) > 6) {
+        throw new RuntimeException('Invalid finalized photo set.');
+    }
+    $statement = $database->prepare(
+        'INSERT INTO user_photos (user_id, file_path, sort_order, source_type) '
+        .'VALUES (?, ?, ?, \'local\')'
+    );
+    foreach ($photoPaths as $index => $path) {
+        $filePath = (string) $path;
+        $sortOrder = $index + 1;
+        $statement->bind_param('isi', $memberId, $filePath, $sortOrder);
+        $statement->execute();
     }
 }
