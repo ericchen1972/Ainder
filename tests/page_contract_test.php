@@ -16,6 +16,9 @@ test('landing declares responsive hero, logo, and Google login', function () use
     ] as $needle) {
         expect_same(true, str_contains($source, $needle));
     }
+
+    expect_same(true, str_contains($source, 'Sign in with Google'));
+    expect_same(true, str_contains($source, 'aria-disabled="true"'));
 });
 
 test('placeholder pages enforce separate session states', function () use ($root): void {

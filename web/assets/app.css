@@ -68,14 +68,28 @@ body {
     justify-content: flex-end;
 }
 
-.login-unavailable {
-    padding: 0.72rem 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.24);
+.google-fallback-button {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.72rem;
+    padding: 0.62rem 1rem;
+    border: 1px solid #dadce0;
     border-radius: 999px;
-    background: rgba(15, 17, 22, 0.74);
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 0.86rem;
-    backdrop-filter: blur(12px);
+    background: #ffffff;
+    color: #3c4043;
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+    cursor: default;
+    user-select: none;
+}
+
+.google-mark {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
 }
 
 .login-error {
