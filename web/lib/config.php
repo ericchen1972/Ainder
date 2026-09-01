@@ -26,6 +26,7 @@ function ainder_config(): array
         'db_name' => 'ainder',
         'google_client_id' => getenv('AINDER_GOOGLE_CLIENT_ID')
             ?: (string) ($local['google_client_id'] ?? ''),
+        'unsplash_access_key' => (string) ($local['unsplash_access_key'] ?? ''),
     ];
 
     return $config;
