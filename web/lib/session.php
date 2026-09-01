@@ -38,3 +38,38 @@ function ainder_clear_session(): void
 
     session_destroy();
 }
+
+function ainder_form_csrf_token(): string
+{
+    if (!isset($_SESSION['ainder_form_csrf'])) {
+        $_SESSION['ainder_form_csrf'] = bin2hex(random_bytes(32));
+    }
+
+    return (string) $_SESSION['ainder_form_csrf'];
+}
+
+function ainder_form_csrf_is_valid(string $submittedToken): bool
+{
+    return isset($_SESSION['ainder_form_csrf'])
+        && $submittedToken !== ''
+        && hash_equals((string) $_SESSION['ainder_form_csrf'], $submittedToken);
+}
+
+function ainder_set_form_flash(array $errors, array $input): void
+{
+    $_SESSION['ainder_form_flash'] = [
+        'errors' => $errors,
+        'input' => $input,
+    ];
+}
+
+function ainder_pull_form_flash(): array
+{
+    $flash = $_SESSION['ainder_form_flash'] ?? [
+        'errors' => [],
+        'input' => [],
+    ];
+    unset($_SESSION['ainder_form_flash']);
+
+    return is_array($flash) ? $flash : ['errors' => [], 'input' => []];
+}

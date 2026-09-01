@@ -41,7 +41,7 @@ function ainder_create_member_with_photos(
     mysqli $database,
     array $identity,
     array $input,
-    array $photoPaths
+    callable $createPhotoPaths
 ): int {
     $googleSub = (string) $identity['google_sub'];
     $email = (string) $identity['email'];
@@ -67,6 +67,11 @@ function ainder_create_member_with_photos(
         );
         $userStatement->execute();
         $memberId = (int) $database->insert_id;
+
+        $photoPaths = $createPhotoPaths($memberId);
+        if (!is_array($photoPaths) || count($photoPaths) < 2 || count($photoPaths) > 6) {
+            throw new RuntimeException('Invalid finalized photo set.');
+        }
 
         $photoStatement = $database->prepare(
             'INSERT INTO user_photos (user_id, file_path, sort_order) '

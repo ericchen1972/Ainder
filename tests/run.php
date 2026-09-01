@@ -29,6 +29,7 @@ function expect_same(mixed $expected, mixed $actual): void
 require __DIR__.'/auth_test.php';
 require __DIR__.'/registration_test.php';
 require __DIR__.'/photo_test.php';
+require __DIR__.'/profile_contract_test.php';
 
 if (is_file(__DIR__.'/page_contract_test.php')) {
     require __DIR__.'/page_contract_test.php';
