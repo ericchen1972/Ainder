@@ -48,22 +48,24 @@ function ainder_create_member_with_photos(
     $displayName = trim((string) $input['display_name']);
     $birthDate = (string) $input['birth_date'];
     $gender = (string) $input['gender'];
+    $basicIntro = trim((string) $input['basic_intro']);
 
     $database->begin_transaction();
 
     try {
         $userStatement = $database->prepare(
             'INSERT INTO users '
-            .'(google_sub, email, display_name, birth_date, gender) '
-            .'VALUES (?, ?, ?, ?, ?)'
+            .'(google_sub, email, display_name, birth_date, gender, basic_intro) '
+            .'VALUES (?, ?, ?, ?, ?, ?)'
         );
         $userStatement->bind_param(
-            'sssss',
+            'ssssss',
             $googleSub,
             $email,
             $displayName,
             $birthDate,
-            $gender
+            $gender,
+            $basicIntro
         );
         $userStatement->execute();
         $memberId = (int) $database->insert_id;
@@ -74,8 +76,8 @@ function ainder_create_member_with_photos(
         }
 
         $photoStatement = $database->prepare(
-            'INSERT INTO user_photos (user_id, file_path, sort_order) '
-            .'VALUES (?, ?, ?)'
+            'INSERT INTO user_photos (user_id, file_path, sort_order, source_type) '
+            .'VALUES (?, ?, ?, \'local\')'
         );
         foreach ($photoPaths as $index => $path) {
             $filePath = (string) $path;

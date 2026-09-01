@@ -52,12 +52,23 @@ test('profile assets use file versions to avoid stale browser caches', function 
 test('profile form contains only approved personal fields', function () use ($profileRoot): void {
     $source = file_get_contents($profileRoot.'/web/profile/index.php');
 
-    foreach (['display_name', 'birth_date', 'gender', 'photos[]'] as $field) {
+    foreach (['display_name', 'birth_date', 'gender', 'basic_intro', 'photos[]'] as $field) {
         expect_same(true, str_contains($source, $field));
     }
     foreach (['有興趣的對象', '我想尋找', '是否在個人資料顯示性別'] as $excluded) {
         expect_same(false, str_contains($source, $excluded));
     }
+});
+
+test('profile form requires the public fifty-character introduction', function () use ($profileRoot): void {
+    $source = file_get_contents($profileRoot.'/web/profile/index.php');
+
+    expect_same(true, str_contains($source, 'name="basic_intro"'));
+    expect_same(true, str_contains($source, 'maxlength="50"'));
+    expect_same(true, str_contains(
+        $source,
+        '工作、居住地等短文字介紹（50字內）'
+    ));
 });
 
 test('photo script enforces two to six selected files', function () use ($profileRoot): void {

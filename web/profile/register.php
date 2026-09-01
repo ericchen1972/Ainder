@@ -25,6 +25,7 @@ $input = [
     'display_name' => trim((string) ($_POST['display_name'] ?? '')),
     'birth_date' => (string) ($_POST['birth_date'] ?? ''),
     'gender' => (string) ($_POST['gender'] ?? ''),
+    'basic_intro' => (string) ($_POST['basic_intro'] ?? ''),
 ];
 
 if (!ainder_form_csrf_is_valid((string) ($_POST['csrf_token'] ?? ''))) {
