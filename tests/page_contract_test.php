@@ -254,6 +254,47 @@ test('browse page exposes no visible Like control', function () use ($root): voi
     expect_same(true, str_contains($page, 'webmcp-app.js'));
 });
 
+test('browse card separates candidate drag from inside photo controls', function () use ($root): void {
+    $page = file_get_contents($root.'/web/app/index.php');
+    $script = file_get_contents($root.'/web/assets/browse.js');
+    $style = file_get_contents($root.'/web/assets/browse.css');
+
+    foreach ([
+        'draggable="false"',
+        "count(\$candidate['photos']) > 1",
+        'class="photo-control photo-previous"',
+        'class="photo-control photo-next"',
+        'candidate-name',
+        'candidate-age',
+        '拖曳卡片換人 · 卡片內箭頭換照片',
+    ] as $needle) {
+        expect_same(true, str_contains($page, $needle));
+    }
+
+    foreach ([
+        'dragstart',
+        'isPhotoControlTarget',
+        "addEventListener('pointerdown'",
+        'updatePhotoControls',
+    ] as $needle) {
+        expect_same(true, str_contains($script, $needle));
+    }
+
+    foreach ([
+        '-webkit-user-drag: none',
+        'user-select: none',
+        '.photo-control::before',
+        'width: 26px',
+        'height: 54px',
+        '.candidate-age',
+        'font-size: 18px',
+    ] as $needle) {
+        expect_same(true, str_contains($style, $needle));
+    }
+
+    expect_same(false, str_contains($page, 'candidate-control'));
+});
+
 test('browse assets implement gestures looping and responsive layout', function () use ($root): void {
     $script = file_get_contents($root.'/web/assets/browse.js');
     $style = file_get_contents($root.'/web/assets/browse.css');
