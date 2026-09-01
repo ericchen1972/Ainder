@@ -9,7 +9,7 @@ Replace the authenticated Ainder placeholder with a Tinder-inspired candidate br
 
 ## Scope
 
-This increment delivers the authenticated browse screen, candidate loading, responsive layout, photo navigation, pointer/touch swiping, keyboard navigation, and empty/error states.
+This increment removes the former `basic_intro` feature from onboarding, persistence, Demo data, and the database schema. It then delivers the authenticated browse screen, candidate loading, responsive layout, photo navigation, pointer/touch swiping, keyboard navigation, and empty/error states.
 
 It does not deliver Like storage or APIs, Pass storage, Matches, messages, Agent Profile creation, Agent evaluation, WebMCP tools, or a persistent record of browsing history. The `Agent Likes` and `Messages` sidebar tabs are presentational empty states in this increment.
 
@@ -41,7 +41,6 @@ The public card contains only:
 - all 2–6 registered photos;
 - display name;
 - calculated age;
-- the public `basic_intro` field of at most 50 characters;
 - visible Unsplash photographer/source attribution where applicable.
 
 The card must not expose Agent Profile text, Agent-known duration, interaction density, Profile timestamps, a compatibility percentage, or any Like control.
@@ -85,7 +84,6 @@ The candidate repository returns an explicit public allowlist:
 - `id`;
 - `display_name`;
 - `age` derived from `birth_date`;
-- `basic_intro`;
 - `photos`, each containing the display URL, sort order, source type, photographer name, photographer URL, and source page URL;
 - `is_demo` only when required internally for future Match enforcement.
 
@@ -115,7 +113,7 @@ A dedicated JavaScript controller owns candidate index, photo index, circular mo
 
 - No eligible candidates: show a centered message that no members are currently available; keep the member/sidebar navigation usable.
 - One photo fails: move to the next available photo and keep attribution synchronized.
-- All photos fail: show a dark branded image placeholder while retaining the member's public text.
+- All photos fail: show a dark branded image placeholder while retaining the member's name and age.
 - Candidate payload is malformed: omit the malformed candidate rather than leaking an exception into the page.
 - Database failure: return the existing generic service-unavailable response without database details.
 - JavaScript unavailable: render the first candidate and functional photo/candidate links or buttons through a conservative server-rendered fallback where practical; no Like action appears.
@@ -137,6 +135,7 @@ Automated checks cover:
 - female members receive only male candidates;
 - disabled members are excluded;
 - only public allowlisted fields reach the page;
+- onboarding, registration, Demo manifests, runtime source, and the final database schema contain no `basic_intro` field;
 - private Agent Profile fields never appear in browse source;
 - the authenticated route guard remains active;
 - no Like control or Like request exists in the browse page;
@@ -157,4 +156,4 @@ Live verification uses a real registered member and confirms:
 
 ## Deployment
 
-No schema migration is required. Deploy the candidate repository, authenticated page, dedicated stylesheet, and dedicated controller. Preserve the production `config.local.php` and uploads directory. Verify live asset hashes or file versions, authenticated redirects, desktop/mobile rendering, candidate counts, loop behavior, and the absence of public diagnostic endpoints.
+First deploy the registration and Demo runtime that no longer reads or writes `basic_intro`; this runtime remains compatible while the old column still exists. Then run a token-protected, rerunnable migration that removes `users.basic_intro`, followed by the candidate repository, authenticated page, dedicated stylesheet, and dedicated controller in the same deployment window. Preserve the production `config.local.php` and uploads directory. Verify the final schema no longer contains `basic_intro`, along with live asset hashes or file versions, authenticated redirects, desktop/mobile rendering, candidate counts, loop behavior, and the absence of public migration or diagnostic endpoints.

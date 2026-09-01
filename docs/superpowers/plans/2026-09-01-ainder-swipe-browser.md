@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the authenticated placeholder with a responsive, opposite-gender candidate browser whose circular swipes only navigate and never Like.
+**Goal:** Remove the former basic-info field completely, then replace the authenticated placeholder with a responsive, opposite-gender candidate browser whose circular swipes only navigate and never Like.
 
-**Architecture:** A focused PHP repository reads active opposite-gender members and converts joined member/photo rows into a strict public card payload. The authenticated page server-renders those cards, while a small pure JavaScript model and DOM controller handle circular candidate navigation, per-member photo navigation, gestures, keyboard input, accessibility, and image fallback. No schema or browsing-history write is introduced.
+**Architecture:** A rerunnable migration removes `users.basic_intro`, and registration/Demo paths stop accepting or writing it before the browse surface is deployed. A focused PHP repository reads active opposite-gender members and converts joined member/photo rows into a strict public card payload. The authenticated page server-renders those cards, while a small pure JavaScript model and DOM controller handle circular candidate navigation, per-member photo navigation, gestures, keyboard input, accessibility, and image fallback; no browsing-history write is introduced.
 
 **Tech Stack:** PHP 8 strict mode, MariaDB/MySQLi, semantic HTML, dedicated CSS, browser ES modules, Node.js built-in test runner, existing PHP test harness, mounted production deployment.
 
@@ -12,6 +12,10 @@
 
 ## File Map
 
+- Create `web/migrations/003_remove_basic_intro.php`: token-protected, rerunnable removal of `users.basic_intro`.
+- Modify `web/lib/registration.php`, `web/lib/database.php`, `web/profile/index.php`, and `web/profile/register.php`: remove the basic-info input, validation, and insert path.
+- Modify `web/lib/demo.php`, `web/seeds/demo_members.php`, and `web/diagnostics/demo_seed_status.php`: remove basic-info validation, persistence, fixture data, and diagnostics.
+- Modify existing PHP tests: prove the old field is absent and the removal migration is present.
 - Create `web/lib/candidates.php`: authenticated member lookup, opposite-gender query, joined-row grouping, age calculation, and public allowlist.
 - Create `tests/candidate_test.php`: pure payload, gender, malformed-card, photo grouping, and query-contract tests.
 - Modify `tests/run.php`: load the candidate test suite.
@@ -23,7 +27,240 @@
 - Modify `tests/page_contract_test.php`: authenticated page, asset versioning, public-field boundary, responsive layout, and no-Like contracts.
 - Create `web/diagnostics/browse_status.php`: temporary token-protected aggregate production diagnostic; deploy only for verification and remove immediately.
 
-### Task 1: Public Candidate Repository
+### Task 1: Remove Basic Info End to End
+
+**Files:**
+- Create: `web/migrations/003_remove_basic_intro.php`
+- Modify: `web/lib/registration.php`
+- Modify: `web/lib/database.php`
+- Modify: `web/profile/index.php`
+- Modify: `web/profile/register.php`
+- Modify: `web/lib/demo.php`
+- Modify: `web/seeds/demo_members.php`
+- Modify: `web/diagnostics/demo_seed_status.php`
+- Modify: `tests/registration_test.php`
+- Modify: `tests/profile_contract_test.php`
+- Modify: `tests/demo_test.php`
+- Modify: `tests/page_contract_test.php`
+
+- [ ] **Step 1: Rewrite the failing contracts around the removed field**
+
+Remove every `basic_intro` input from the registration test fixtures and delete the former 50-character validation test. Replace the profile-field contract with:
+
+```php
+test('profile form contains only approved personal fields', function () use ($profileRoot): void {
+    $source = file_get_contents($profileRoot.'/web/profile/index.php');
+
+    foreach (['display_name', 'birth_date', 'gender', 'photos[]'] as $field) {
+        expect_same(true, str_contains($source, $field));
+    }
+    foreach ([
+        'basic_intro',
+        '工作、居住地等短文字介紹（50字內）',
+        '有興趣的對象',
+        '我想尋找',
+        '是否在個人資料顯示性別',
+    ] as $excluded) {
+        expect_same(false, str_contains($source, $excluded));
+    }
+});
+```
+
+Delete `profile form requires the public fifty-character introduction`. In `tests/demo_test.php`, remove the `basic_intro` input from the public-payload fixture and replace the manifest assertion with:
+
+```php
+foreach ($manifest as $member) {
+    expect_same(2, count($member['photos']));
+    expect_same(false, array_key_exists('basic_intro', $member));
+    expect_same(true, $member['is_demo']);
+}
+```
+
+Add this migration/runtime contract to `tests/page_contract_test.php`:
+
+```php
+test('third migration and current runtime remove basic info completely', function () use ($root): void {
+    $migration = file_get_contents(
+        $root.'/web/migrations/003_remove_basic_intro.php'
+    );
+    expect_same(true, str_contains($migration, "DROP COLUMN basic_intro"));
+    expect_same(true, str_contains($migration, 'information_schema.COLUMNS'));
+
+    foreach ([
+        'web/lib/registration.php',
+        'web/lib/database.php',
+        'web/profile/index.php',
+        'web/profile/register.php',
+        'web/lib/demo.php',
+        'web/seeds/demo_members.php',
+        'web/diagnostics/demo_seed_status.php',
+    ] as $relativePath) {
+        $source = file_get_contents($root.'/'.$relativePath);
+        expect_same(false, str_contains($source, 'basic_intro'));
+    }
+});
+```
+
+Remove `basic_intro VARCHAR(50)` from the historical migration-002 expectations while leaving the actual append-only migration file unchanged. Remove `invalid_intro_count` from the Demo diagnostic expectation.
+
+- [ ] **Step 2: Run the PHP suite and verify removal contracts fail**
+
+Run:
+
+```bash
+lean-ctx -c --raw php tests/run.php
+```
+
+Expected: failures because registration, onboarding, Demo runtime, and the database still contain `basic_intro`, and migration 003 is absent.
+
+- [ ] **Step 3: Remove the field from registration and onboarding**
+
+In `web/lib/registration.php`, remove `$basicIntro` and its required/length validation so the function validates only display name, birthday, age, and binary gender. In `web/profile/register.php`, use exactly:
+
+```php
+$input = [
+    'display_name' => trim((string) ($_POST['display_name'] ?? '')),
+    'birth_date' => (string) ($_POST['birth_date'] ?? ''),
+    'gender' => (string) ($_POST['gender'] ?? ''),
+];
+```
+
+In `web/profile/index.php`, remove the `$basicIntro` variable and the entire `<label>` whose input is named `basic_intro`. Keep the existing name, readonly email, birthday, gender, and 2–6 photo fields.
+
+In `web/lib/database.php`, remove `$basicIntro` and change the member insert to:
+
+```php
+$userStatement = $database->prepare(
+    'INSERT INTO users '
+    .'(google_sub, email, display_name, birth_date, gender) '
+    .'VALUES (?, ?, ?, ?, ?)'
+);
+$userStatement->bind_param(
+    'sssss',
+    $googleSub,
+    $email,
+    $displayName,
+    $birthDate,
+    $gender
+);
+```
+
+- [ ] **Step 4: Remove the field from Demo data and persistence**
+
+In `web/seeds/demo_members.php`, delete all twenty `'basic_intro' => '...',` entries and keep the remaining English names, photos, cohorts, and private Agent Profiles unchanged.
+
+In `web/lib/demo.php`:
+
+- remove `basic_intro` from `ainder_public_candidate_payload()`;
+- validate only `display_name` in the English member-field loop;
+- delete the 50-character introduction check;
+- remove `$basicIntro` from `ainder_upsert_demo_user()`;
+- replace the Demo user upsert with:
+
+```php
+$statement = $database->prepare(
+    'INSERT INTO users '
+    .'(google_sub, email, display_name, birth_date, gender, is_demo) '
+    .'VALUES (?, ?, ?, ?, ?, ?) '
+    .'ON DUPLICATE KEY UPDATE '
+    .'id = LAST_INSERT_ID(id), email = VALUES(email), '
+    .'display_name = VALUES(display_name), birth_date = VALUES(birth_date), '
+    .'gender = VALUES(gender), is_demo = 1, status = \'active\''
+);
+$statement->bind_param(
+    'sssssi',
+    $googleSub,
+    $email,
+    $displayName,
+    $birthDate,
+    $gender,
+    $isDemo
+);
+```
+
+In `web/diagnostics/demo_seed_status.php`, remove the `invalid_intro_count` query and response key.
+
+- [ ] **Step 5: Add the rerunnable removal migration**
+
+Create `web/migrations/003_remove_basic_intro.php`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+$localPath = dirname(__DIR__).'/config.local.php';
+if (!is_file($localPath)) {
+    http_response_code(503);
+    exit('Migration configuration unavailable.');
+}
+$local = require $localPath;
+$providedToken = PHP_SAPI === 'cli'
+    ? (string) ($argv[1] ?? '')
+    : (string) ($_POST['token'] ?? '');
+$expectedToken = (string) ($local['migration_token'] ?? '');
+if ($expectedToken === ''
+    || $providedToken === ''
+    || !hash_equals($expectedToken, $providedToken)) {
+    http_response_code(403);
+    exit('Forbidden');
+}
+
+if (!defined('SWEETY_MYSQL_CONFIG_ONLY')) {
+    define('SWEETY_MYSQL_CONFIG_ONLY', true);
+}
+require dirname(__DIR__, 2).'/mysql.php';
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+try {
+    $database = new mysqli($mysqlhost, $mysqluser, $mysqlpasswd, 'ainder');
+    $database->set_charset('utf8mb4');
+    $schema = 'ainder';
+    $table = 'users';
+    $column = 'basic_intro';
+    $statement = $database->prepare(
+        'SELECT 1 FROM information_schema.COLUMNS '
+        .'WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ? '
+        .'LIMIT 1'
+    );
+    $statement->bind_param('sss', $schema, $table, $column);
+    $statement->execute();
+    if ($statement->get_result()->fetch_row() !== null) {
+        $database->query('ALTER TABLE users DROP COLUMN basic_intro');
+    }
+} catch (Throwable) {
+    http_response_code(503);
+    exit('Migration failed.');
+}
+
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode([
+    'ok' => true,
+    'migration' => '003_remove_basic_intro',
+], JSON_UNESCAPED_SLASHES);
+```
+
+- [ ] **Step 6: Run the removal tests, source scan, and lint**
+
+Run:
+
+```bash
+lean-ctx -c --raw php tests/run.php
+lean-ctx -c --raw php -l web/migrations/003_remove_basic_intro.php
+lean-ctx -c 'rg -n "basic_intro|工作、居住地等短文字介紹（50字內）" web tests'
+lean-ctx -c 'git diff --check'
+```
+
+Expected: all tests pass; lint passes; the source scan reports only the intentional migration-002 add and migration-003 drop references plus the page-contract assertions that verify removal.
+
+- [ ] **Step 7: Commit the complete removal**
+
+```bash
+lean-ctx -c 'git add web/migrations/003_remove_basic_intro.php web/lib/registration.php web/lib/database.php web/profile/index.php web/profile/register.php web/lib/demo.php web/seeds/demo_members.php web/diagnostics/demo_seed_status.php tests/registration_test.php tests/profile_contract_test.php tests/demo_test.php tests/page_contract_test.php'
+lean-ctx -c 'git commit -m "refactor: remove Ainder basic info"'
+```
+
+### Task 2: Public Candidate Repository
 
 **Files:**
 - Create: `tests/candidate_test.php`
@@ -67,7 +304,6 @@ test('joined candidate rows become a strict public card', function (): void {
             'id' => 8,
             'display_name' => 'Maya Zhou',
             'birth_date' => '1994-02-07',
-            'basic_intro' => 'UX researcher, reader, and devoted animal person.',
             'is_demo' => 1,
             'file_path' => 'https://images.unsplash.com/photo-one',
             'sort_order' => 1,
@@ -80,7 +316,6 @@ test('joined candidate rows become a strict public card', function (): void {
             'id' => 8,
             'display_name' => 'Maya Zhou',
             'birth_date' => '1994-02-07',
-            'basic_intro' => 'UX researcher, reader, and devoted animal person.',
             'is_demo' => 1,
             'file_path' => 'https://images.unsplash.com/photo-two',
             'sort_order' => 2,
@@ -101,7 +336,6 @@ test('joined candidate rows become a strict public card', function (): void {
         'id',
         'display_name',
         'age',
-        'basic_intro',
         'is_demo',
         'photos',
     ], array_keys($cards[0]));
@@ -109,6 +343,7 @@ test('joined candidate rows become a strict public card', function (): void {
     expect_same(2, count($cards[0]['photos']));
     expect_same(false, array_key_exists('birth_date', $cards[0]));
     expect_same(false, array_key_exists('gender', $cards[0]));
+    expect_same(false, array_key_exists('basic_intro', $cards[0]));
     expect_same(false, array_key_exists('profile_text', $cards[0]));
 });
 
@@ -119,7 +354,6 @@ test('candidate grouping preserves two through six ordered photos', function ():
             'id' => 9,
             'display_name' => 'Emma Blake',
             'birth_date' => '1988-04-04',
-            'basic_intro' => 'Architect, city walker, and weekend baker.',
             'is_demo' => 0,
             'file_path' => "/ainder/uploads/9/{$order}.webp",
             'sort_order' => $order,
@@ -143,7 +377,6 @@ test('malformed candidates are omitted from public cards', function (): void {
         'id' => 10,
         'display_name' => 'Incomplete',
         'birth_date' => '1990-01-01',
-        'basic_intro' => '',
         'is_demo' => 0,
         'file_path' => '/ainder/uploads/10/1.webp',
         'sort_order' => 1,
@@ -245,7 +478,6 @@ function ainder_candidate_cards_from_rows(
                 'id' => $id,
                 'display_name' => trim((string) ($row['display_name'] ?? '')),
                 'age' => $validDate ? $birthDate->diff($now)->y : 0,
-                'basic_intro' => trim((string) ($row['basic_intro'] ?? '')),
                 'is_demo' => (int) ($row['is_demo'] ?? 0) === 1,
                 'photos' => [],
             ];
@@ -275,8 +507,6 @@ function ainder_candidate_cards_from_rows(
         );
         if ($card['display_name'] === ''
             || $card['age'] < 18
-            || $card['basic_intro'] === ''
-            || mb_strlen($card['basic_intro'], 'UTF-8') > 50
             || count($card['photos']) < 2
             || count($card['photos']) > 6) {
             continue;
@@ -294,7 +524,7 @@ function ainder_list_browse_candidates(
 ): array {
     $candidateGender = ainder_candidate_gender($viewerGender);
     $statement = $database->prepare(
-        'SELECT u.id, u.display_name, u.birth_date, u.basic_intro, u.is_demo, '
+        'SELECT u.id, u.display_name, u.birth_date, u.is_demo, '
         .'p.file_path, p.sort_order, p.source_type, p.photographer_name, '
         .'p.photographer_url, p.source_page_url '
         .'FROM users u INNER JOIN user_photos p ON p.user_id = u.id '
@@ -328,7 +558,7 @@ lean-ctx -c 'git add web/lib/candidates.php tests/candidate_test.php tests/run.p
 lean-ctx -c 'git commit -m "feat: add Ainder candidate repository"'
 ```
 
-### Task 2: Circular Navigation Model
+### Task 3: Circular Navigation Model
 
 **Files:**
 - Create: `web/assets/browse-model.mjs`
@@ -413,7 +643,7 @@ lean-ctx -c 'git add web/assets/browse-model.mjs tests/browse_model_test.mjs'
 lean-ctx -c 'git commit -m "feat: add circular browse model"'
 ```
 
-### Task 3: Authenticated Browse Markup
+### Task 4: Authenticated Browse Markup
 
 **Files:**
 - Modify: `tests/page_contract_test.php`
@@ -447,6 +677,7 @@ test('authenticated app renders the approved public browse surface', function ()
 
     foreach ([
         'profile_text',
+        'basic_intro',
         'agent_known_duration_days',
         'interaction_density',
         'compatibility',
@@ -579,7 +810,7 @@ Render semantic HTML with these exact structural contracts after the bootstrap:
                         <button class="photo-zone photo-previous" type="button" aria-label="上一張照片"></button>
                         <button class="photo-zone photo-next" type="button" aria-label="下一張照片"></button>
                         <div class="candidate-shade"></div>
-                        <div class="candidate-copy"><h1><?= $escape($candidate['display_name']) ?> <span><?= (int) $candidate['age'] ?></span></h1><p><?= $escape($candidate['basic_intro']) ?></p></div>
+                        <div class="candidate-copy"><h1><?= $escape($candidate['display_name']) ?> <span><?= (int) $candidate['age'] ?></span></h1></div>
                     </article>
                 <?php endforeach; ?>
             </div>
@@ -602,7 +833,7 @@ lean-ctx -c --raw php -l web/app/index.php
 lean-ctx -c --raw php tests/run.php
 ```
 
-Expected: lint passes; the new page contract passes. Asset existence contracts may remain pending until Task 4.
+Expected: lint passes; the new page contract passes. Asset existence contracts remain pending until Task 5.
 
 - [ ] **Step 5: Commit the authenticated markup**
 
@@ -611,7 +842,7 @@ lean-ctx -c 'git add web/app/index.php tests/page_contract_test.php'
 lean-ctx -c 'git commit -m "feat: render Ainder candidate browser"'
 ```
 
-### Task 4: Swipe Controller and Responsive Visual System
+### Task 5: Swipe Controller and Responsive Visual System
 
 **Files:**
 - Create: `web/assets/browse.js`
@@ -839,7 +1070,6 @@ button, a { font: inherit; }
 .candidate-copy { position: absolute; z-index: 5; left: 22px; right: 22px; bottom: 28px; pointer-events: none; }
 .candidate-copy h1 { margin: 0; font-size: clamp(24px, 2.5vw, 34px); letter-spacing: -.025em; }
 .candidate-copy h1 span { font-weight: 450; }
-.candidate-copy p { margin: 7px 0 0; max-width: 34ch; line-height: 1.45; }
 .candidate-control { position: absolute; z-index: 8; top: 50%; width: 52px; height: 52px; display: grid; place-items: center; border: 1px solid #3b3e4b; border-radius: 50%; background: #171820; color: #fff; font-size: 30px; cursor: pointer; transform: translateY(-50%); }
 .candidate-control:focus-visible, .sidebar-tabs button:focus-visible, .photo-zone:focus-visible { outline: 3px solid #ff83a9; outline-offset: 3px; }
 .candidate-next { left: max(22px, calc(50% - 300px)); }
@@ -895,7 +1125,7 @@ lean-ctx -c 'git add web/assets/browse.js web/assets/browse.css tests/page_contr
 lean-ctx -c 'git commit -m "feat: add Ainder circular swipe interface"'
 ```
 
-### Task 5: Production Aggregate Diagnostic
+### Task 6: Production Aggregate Diagnostic
 
 **Files:**
 - Create: `web/diagnostics/browse_status.php`
@@ -915,6 +1145,7 @@ test('browse diagnostic is token protected and aggregate only', function () use 
         'female_view_candidates',
         'demo_female_candidates',
         'demo_male_candidates',
+        'basic_intro_column_exists',
     ] as $needle) {
         expect_same(true, str_contains($source, $needle));
     }
@@ -944,6 +1175,7 @@ Create `web/diagnostics/browse_status.php` using the existing POST-only `migrati
   "female_view_candidates": 11,
   "demo_female_candidates": 10,
   "demo_male_candidates": 10,
+  "basic_intro_column_exists": 0,
   "active_candidates_without_two_photos": 0
 }
 ```
@@ -1002,6 +1234,12 @@ $result = [
         $database,
         "SELECT COUNT(*) FROM users WHERE status = 'active' AND gender = 'male' AND is_demo = 1"
     ),
+    'basic_intro_column_exists' => $count(
+        $database,
+        "SELECT COUNT(*) FROM information_schema.COLUMNS "
+        ."WHERE TABLE_SCHEMA = 'ainder' AND TABLE_NAME = 'users' "
+        ."AND COLUMN_NAME = 'basic_intro'"
+    ),
     'active_candidates_without_two_photos' => $count(
         $database,
         "SELECT COUNT(*) FROM (SELECT u.id FROM users u LEFT JOIN user_photos p "
@@ -1036,11 +1274,11 @@ lean-ctx -c 'git add web/diagnostics/browse_status.php tests/page_contract_test.
 lean-ctx -c 'git commit -m "test: add Ainder browse deployment diagnostic"'
 ```
 
-### Task 6: Deployment and Live Verification
+### Task 7: Deployment and Live Verification
 
 **Files:**
-- Deploy persistently: `web/lib/candidates.php`, `web/app/index.php`, `web/assets/browse.css`, `web/assets/browse-model.mjs`, `web/assets/browse.js`
-- Deploy temporarily, then remove: `web/diagnostics/browse_status.php`
+- Deploy persistently: `web/lib/registration.php`, `web/lib/database.php`, `web/lib/demo.php`, `web/profile/index.php`, `web/profile/register.php`, `web/lib/candidates.php`, `web/app/index.php`, `web/assets/browse.css`, `web/assets/browse-model.mjs`, `web/assets/browse.js`
+- Deploy temporarily, then remove: `web/migrations/003_remove_basic_intro.php`, `web/diagnostics/browse_status.php`
 - Preserve: `/Volumes/sweety.tw/ainder/config.local.php`, `/Volumes/sweety.tw/ainder/uploads/`
 
 - [ ] **Step 1: Run the complete pre-deploy evidence loop**
@@ -1057,10 +1295,15 @@ Expected: all tests/lints pass; only user-owned `.DS_Store`, `.superpowers/`, an
 
 - [ ] **Step 2: Inventory production targets and deploy persistent files**
 
-Confirm `/Volumes/sweety.tw/ainder` is mounted and inventory the exact target directories. Deploy only the five persistent files:
+Confirm `/Volumes/sweety.tw/ainder` is mounted and inventory the exact target directories. Deploy the removal-compatible runtime and browse files before dropping the column:
 
 ```bash
 lean-ctx -c 'ls -la /Volumes/sweety.tw/ainder'
+cp web/lib/registration.php /Volumes/sweety.tw/ainder/lib/registration.php
+cp web/lib/database.php /Volumes/sweety.tw/ainder/lib/database.php
+cp web/lib/demo.php /Volumes/sweety.tw/ainder/lib/demo.php
+cp web/profile/index.php /Volumes/sweety.tw/ainder/profile/index.php
+cp web/profile/register.php /Volumes/sweety.tw/ainder/profile/register.php
 cp web/lib/candidates.php /Volumes/sweety.tw/ainder/lib/candidates.php
 cp web/app/index.php /Volumes/sweety.tw/ainder/app/index.php
 cp web/assets/browse.css /Volumes/sweety.tw/ainder/assets/browse.css
@@ -1076,23 +1319,38 @@ Run SHA-256 for each local/production pair and require identical output:
 
 ```bash
 shasum -a 256 web/lib/candidates.php /Volumes/sweety.tw/ainder/lib/candidates.php
+shasum -a 256 web/lib/registration.php /Volumes/sweety.tw/ainder/lib/registration.php
+shasum -a 256 web/lib/database.php /Volumes/sweety.tw/ainder/lib/database.php
+shasum -a 256 web/lib/demo.php /Volumes/sweety.tw/ainder/lib/demo.php
+shasum -a 256 web/profile/index.php /Volumes/sweety.tw/ainder/profile/index.php
+shasum -a 256 web/profile/register.php /Volumes/sweety.tw/ainder/profile/register.php
 shasum -a 256 web/app/index.php /Volumes/sweety.tw/ainder/app/index.php
 shasum -a 256 web/assets/browse.css /Volumes/sweety.tw/ainder/assets/browse.css
 shasum -a 256 web/assets/browse-model.mjs /Volumes/sweety.tw/ainder/assets/browse-model.mjs
 shasum -a 256 web/assets/browse.js /Volumes/sweety.tw/ainder/assets/browse.js
 ```
 
-- [ ] **Step 4: Run the temporary production diagnostic**
+- [ ] **Step 4: Remove the production database column**
+
+Copy `web/migrations/003_remove_basic_intro.php` to the exact production migrations directory. POST the ignored `migration_token` by reading it inside the local PHP process so the secret never appears in command output. Require HTTP 200 and:
+
+```json
+{"ok":true,"migration":"003_remove_basic_intro"}
+```
+
+Remove only `/Volumes/sweety.tw/ainder/migrations/003_remove_basic_intro.php`, then use a cache-busted request with `Cache-Control: no-cache` and require HTTP 404.
+
+- [ ] **Step 5: Run the temporary production diagnostic**
 
 Create the exact production diagnostics directory if absent, copy `browse_status.php`, POST the ignored production migration token without printing it, and require HTTP 200 with:
 
 ```json
-{"male_view_candidates":10,"female_view_candidates":11,"demo_female_candidates":10,"demo_male_candidates":10,"active_candidates_without_two_photos":0}
+{"male_view_candidates":10,"female_view_candidates":11,"demo_female_candidates":10,"demo_male_candidates":10,"basic_intro_column_exists":0,"active_candidates_without_two_photos":0}
 ```
 
 Remove only `/Volumes/sweety.tw/ainder/diagnostics/browse_status.php`, remove the directory if it is now empty and was created by this task, and verify the cache-busted diagnostic URL returns HTTP 404.
 
-- [ ] **Step 5: Verify authenticated and unauthenticated live behavior**
+- [ ] **Step 6: Verify authenticated and unauthenticated live behavior**
 
 Verify:
 
@@ -1106,10 +1364,10 @@ GET /ainder/assets/browse.js         -> HTTP 200
 
 Using the existing signed-in real member, verify every visible card has the opposite gender, the ten opposite-gender Demo members are present, all additional real candidates also satisfy the gender rule, the final card wraps to the first, all available photos switch, `data-current-candidate-id` updates, and no Like/Match request occurs.
 
-- [ ] **Step 6: Verify desktop and mobile rendering in a real browser**
+- [ ] **Step 7: Verify desktop and mobile rendering in a real browser**
 
-Capture and inspect 1440×900 and 390×844 screenshots. Compare against approved layout A for sidebar width, card proportions, image crop, bottom text gradient, mobile safe areas, focus states, and overflow. Correct and re-run Tasks 4–6 if material visual drift is found.
+Capture and inspect 1440×900 and 390×844 screenshots. Compare against approved layout A for sidebar width, card proportions, image crop, bottom text gradient, mobile safe areas, focus states, and overflow. Correct and re-run Tasks 5–7 if material visual drift is found.
 
-- [ ] **Step 7: Report deployment evidence**
+- [ ] **Step 8: Report deployment evidence**
 
 Report the live URL, candidate counts for both viewing genders, full test result, hash match, diagnostic removal/404, responsive browser result, and the explicit fact that swiping created no Like or Match.
