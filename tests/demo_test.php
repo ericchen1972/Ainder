@@ -44,14 +44,32 @@ test('Agent Profiles expire at their explicit expiry time', function (): void {
     ));
 });
 
-test('matchmaking evaluation requires fresh profiles for both people', function (): void {
+test('matchmaking evaluation checks only the requester profile date', function (): void {
     $now = new DateTimeImmutable('2026-09-01 00:00:00');
-    $fresh = ['expires_at' => '2026-12-01 00:00:00'];
-    $stale = ['expires_at' => '2026-09-01 00:00:00'];
+    $requesterFresh = [
+        'profile_text' => 'Requester profile',
+        'expires_at' => '2026-12-01 00:00:00',
+    ];
+    $requesterStale = [
+        'profile_text' => 'Requester profile',
+        'expires_at' => '2026-09-01 00:00:00',
+    ];
+    $candidateStale = [
+        'profile_text' => 'Candidate profile',
+        'expires_at' => '2026-01-01 00:00:00',
+    ];
 
-    expect_same(true, ainder_profiles_allow_evaluation($fresh, $fresh, $now));
-    expect_same(false, ainder_profiles_allow_evaluation($fresh, [], $now));
-    expect_same(false, ainder_profiles_allow_evaluation($fresh, $stale, $now));
+    expect_same(true, ainder_profiles_allow_evaluation(
+        $requesterFresh,
+        $candidateStale,
+        $now
+    ));
+    expect_same(false, ainder_profiles_allow_evaluation($requesterFresh, [], $now));
+    expect_same(false, ainder_profiles_allow_evaluation(
+        $requesterStale,
+        $candidateStale,
+        $now
+    ));
 });
 
 test('public candidates exclude Agent Profile fields', function (): void {

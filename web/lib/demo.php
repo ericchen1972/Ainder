@@ -81,7 +81,7 @@ function ainder_profiles_allow_evaluation(
     DateTimeImmutable $now
 ): bool {
     return ainder_agent_profile_is_fresh($requesterProfile, $now)
-        && ainder_agent_profile_is_fresh($candidateProfile, $now);
+        && trim((string) ($candidateProfile['profile_text'] ?? '')) !== '';
 }
 
 function ainder_public_candidate_payload(array $member, array $photos): array

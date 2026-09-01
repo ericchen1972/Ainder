@@ -74,7 +74,7 @@ The private record contains:
 - expiry time;
 - update time.
 
-An Agent Profile expires three months after generation. A stale profile cannot be used for a new AI matchmaking evaluation. Demo profiles obey the same rule and must be explicitly refreshed; they do not receive a permanent freshness exception.
+An Agent Profile expires three months after generation. The date check applies only to the member asking their Agent for an evaluation: that requester's own Profile must be current. The candidate must also have a Profile, but its date does not block the evaluation. Demo Profiles use the same stored timestamps, while another member's Agent checks only that the Demo Profile exists.
 
 ## Database Design
 
