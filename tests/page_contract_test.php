@@ -461,6 +461,24 @@ test('Messages renders Match cards opinion modal and persistent composer', funct
     expect_same(false, str_contains($page, 'Chloe Park'));
 });
 
+test('profile update endpoint protects multipart member photo changes', function () use ($root): void {
+    $source = file_get_contents($root.'/web/api/profile/update.php');
+
+    foreach ([
+        'ainder_member_id',
+        'ainder_form_csrf_is_valid',
+        'ainder_normalize_uploads',
+        'ainder_validate_photo_file',
+        'ainder_stage_photos',
+        'ainder_finalize_photos',
+        'ainder_update_member_profile',
+        'ainder_cleanup_photo_paths',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+    expect_same(false, str_contains($source, 'document.modelContext'));
+});
+
 test('browse diagnostic is token protected and aggregate only', function () use ($root): void {
     $source = file_get_contents($root.'/web/diagnostics/browse_status.php');
 
