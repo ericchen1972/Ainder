@@ -47,6 +47,7 @@ $escape = static fn (mixed $value): string => htmlspecialchars(
     ENT_QUOTES,
     'UTF-8'
 );
+$csrfToken = ainder_form_csrf_token();
 $currentCandidateId = $candidates === [] ? '' : (string) $candidates[0]['id'];
 $avatarPath = trim((string) ($member['avatar_path'] ?? ''));
 $avatarPath = $avatarPath !== ''
@@ -59,7 +60,7 @@ $avatarPath = $avatarPath !== ''
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0d0e13">
-    <meta name="ainder-csrf-token" content="<?= $escape(ainder_form_csrf_token()) ?>">
+    <meta name="ainder-csrf-token" content="<?= $escape($csrfToken) ?>">
     <title>Ainder</title>
     <link rel="stylesheet" href="/ainder/assets/browse.css?v=<?= $assetVersion('/assets/browse.css') ?>">
     <script type="importmap">{"imports":{"ainder-browse-model":"/ainder/assets/browse-model.js?v=<?= $assetVersion('/assets/browse-model.js') ?>"}}</script>
@@ -72,6 +73,10 @@ $avatarPath = $avatarPath !== ''
         <div class="member-bar">
             <img src="<?= $escape($avatarPath) ?>" alt="">
             <img class="sidebar-logo" src="/ainder/assets/ainder-logo-white.webp" alt="Ainder">
+            <form class="logout-form" method="post" action="/ainder/logout.php">
+                <input type="hidden" name="csrf_token" value="<?= $escape($csrfToken) ?>">
+                <button type="submit">登出</button>
+            </form>
         </div>
         <div class="sidebar-tabs" role="tablist" aria-label="Member activity">
             <button type="button" role="tab" aria-selected="true">Agent Likes</button>
@@ -87,7 +92,13 @@ $avatarPath = $avatarPath !== ''
     <section class="browse-stage" aria-label="候選會員">
         <header class="mobile-bar">
             <img src="/ainder/assets/ainder-logo-white.webp" alt="Ainder">
-            <img src="<?= $escape($avatarPath) ?>" alt="會員資料">
+            <div class="mobile-member-actions">
+                <img src="<?= $escape($avatarPath) ?>" alt="會員資料">
+                <form class="logout-form" method="post" action="/ainder/logout.php">
+                    <input type="hidden" name="csrf_token" value="<?= $escape($csrfToken) ?>">
+                    <button type="submit">登出</button>
+                </form>
+            </div>
         </header>
 
         <?php if ($candidates === []): ?>

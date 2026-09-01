@@ -54,6 +54,21 @@ a { font: inherit; }
 
 .sidebar-logo { width: 108px; height: auto; }
 
+.logout-form { margin-left: auto; }
+
+.logout-form button {
+    padding: 7px 11px;
+    border: 1px solid rgba(255,255,255,.48);
+    border-radius: 999px;
+    background: rgba(10,11,16,.2);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.logout-form button:hover { background: rgba(10,11,16,.4); }
+
 .sidebar-tabs {
     display: flex;
     gap: 22px;
@@ -235,7 +250,8 @@ a { font: inherit; }
 
 .candidate-control:focus-visible,
 .sidebar-tabs button:focus-visible,
-.photo-zone:focus-visible { outline: 3px solid #ff83a9; outline-offset: 3px; }
+.photo-zone:focus-visible,
+.logout-form button:focus-visible { outline: 3px solid #ff83a9; outline-offset: 3px; }
 
 .candidate-next { left: max(22px, calc(50% - 300px)); }
 .candidate-previous { right: max(22px, calc(50% - 300px)); }
@@ -281,7 +297,8 @@ a { font: inherit; }
         background: #111219;
     }
     .mobile-bar img:first-child { width: 110px; height: auto; }
-    .mobile-bar img:last-child { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .mobile-member-actions { display: flex; align-items: center; gap: 10px; }
+    .mobile-member-actions > img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
     .candidate-stack { width: 100%; height: calc(100dvh - 58px); aspect-ratio: auto; }
     .candidate-card { border: 0; border-radius: 0; box-shadow: none; }
     .candidate-copy { bottom: calc(28px + env(safe-area-inset-bottom)); }

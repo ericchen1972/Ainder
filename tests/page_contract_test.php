@@ -234,6 +234,19 @@ test('authenticated app renders the approved public browse surface', function ()
     }
 });
 
+test('authenticated app provides a CSRF-protected POST sign-out', function () use ($root): void {
+    $app = file_get_contents($root.'/web/app/index.php');
+    $logout = file_get_contents($root.'/web/logout.php');
+
+    expect_same(2, substr_count($app, 'action="/ainder/logout.php"'));
+    expect_same(2, substr_count($app, 'name="csrf_token"'));
+    expect_same(2, substr_count($app, 'method="post"'));
+    expect_same(2, substr_count($app, '>登出<'));
+    expect_same(true, str_contains($logout, "\$_SERVER['REQUEST_METHOD']"));
+    expect_same(true, str_contains($logout, 'ainder_form_csrf_is_valid'));
+    expect_same(true, str_contains($logout, "header('Location: /ainder/app/')"));
+});
+
 test('browse page exposes no visible Like control', function () use ($root): void {
     $page = file_get_contents($root.'/web/app/index.php');
     expect_same(false, str_contains($page, 'class="like-button"'));
