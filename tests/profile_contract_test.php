@@ -76,7 +76,9 @@ test('photo script enforces two to six selected files', function () use ($profil
 });
 
 test('manual photo script creates canonical portrait WebPs before submit', function () use ($profileRoot): void {
-    $source = file_get_contents($profileRoot.'/web/assets/profile.js');
+    $source = file_get_contents(
+        $profileRoot.'/web/assets/client-photo-processor.js'
+    );
 
     foreach ([
         'OUTPUT_WIDTH = 720',
@@ -86,10 +88,21 @@ test('manual photo script creates canonical portrait WebPs before submit', funct
         "canvas.toBlob",
         "'image/webp'",
         'new File(',
-        'isProcessing',
+        'export async function preprocessProfilePhoto',
     ] as $contract) {
         expect_same(true, str_contains($source, $contract));
     }
+});
+
+test('registration imports the shared client photo processor as a module', function () use ($profileRoot): void {
+    $script = file_get_contents($profileRoot.'/web/assets/profile.js');
+    $page = file_get_contents($profileRoot.'/web/profile/index.php');
+
+    expect_same(true, str_contains(
+        $script,
+        "import { preprocessProfilePhoto } from './client-photo-processor.js'"
+    ));
+    expect_same(true, str_contains($page, 'type="module"'));
 });
 
 test('manual and Agent uploads share the image processor', function () use ($profileRoot): void {
