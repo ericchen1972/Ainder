@@ -12,3 +12,11 @@ export function candidateStepForDrag(deltaX, threshold = 64) {
 export function photoIndexAfterStep(index, step, total) {
   return wrapIndex(index + step, total);
 }
+
+export function isPhotoControlTarget(target) {
+  return Boolean(
+    target
+      && typeof target.closest === 'function'
+      && target.closest('.photo-control'),
+  );
+}

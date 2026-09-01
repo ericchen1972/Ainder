@@ -10,6 +10,7 @@ const {
   wrapIndex,
   candidateStepForDrag,
   photoIndexAfterStep,
+  isPhotoControlTarget,
 } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 
 test('candidate indices wrap at both ends', () => {
@@ -27,4 +28,15 @@ test('left drag means next and right drag means previous', () => {
 test('photo navigation wraps without changing candidates', () => {
   assert.equal(photoIndexAfterStep(1, 1, 2), 0);
   assert.equal(photoIndexAfterStep(0, -1, 2), 1);
+});
+
+test('photo controls are excluded from candidate drag starts', () => {
+  const control = {
+    closest: (selector) => selector === '.photo-control' ? control : null,
+  };
+  const image = { closest: () => null };
+
+  assert.equal(isPhotoControlTarget(control), true);
+  assert.equal(isPhotoControlTarget(image), false);
+  assert.equal(isPhotoControlTarget(null), false);
 });
