@@ -172,6 +172,33 @@ test('third migration and current runtime remove basic info completely', functio
     }
 });
 
+test('fourth migration creates Agent workflow tables', function () use ($root): void {
+    $source = file_get_contents($root.'/web/migrations/004_add_agent_actions.php');
+
+    foreach ([
+        'agent_registration_sessions',
+        'agent_registration_uploads',
+        'candidate_evaluations',
+        'likes',
+        'matches',
+        'UNIQUE KEY likes_sender_recipient_unique',
+        'UNIQUE KEY matches_pair_unique',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+});
+
+test('signed uploads require an untracked signing key and public base URL', function () use ($root): void {
+    $config = file_get_contents($root.'/web/lib/config.php');
+    $example = file_get_contents($root.'/web/config.local.example.php');
+
+    foreach (['upload_signing_key', 'public_base_url'] as $key) {
+        expect_same(true, str_contains($config, $key));
+        expect_same(true, str_contains($example, $key));
+    }
+    expect_same(false, str_contains($config, 'replace-with-64-random-hex-characters'));
+});
+
 test('authenticated app renders the approved public browse surface', function () use ($root): void {
     $source = file_get_contents($root.'/web/app/index.php');
 
