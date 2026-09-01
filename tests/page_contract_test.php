@@ -73,8 +73,32 @@ test('migration creates only Ainder database and users table', function () use (
         true,
         str_contains($source, 'UNIQUE KEY users_google_sub_unique')
     );
+    expect_same(true, str_contains($source, 'birth_date DATE NOT NULL'));
+    expect_same(true, str_contains($source, "gender ENUM('male', 'female')"));
+    expect_same(
+        true,
+        str_contains($source, 'CREATE TABLE IF NOT EXISTS user_photos')
+    );
+    expect_same(
+        true,
+        str_contains($source, 'UNIQUE KEY user_photos_user_sort_unique')
+    );
+    expect_same(
+        true,
+        str_contains($source, 'FOREIGN KEY (user_id) REFERENCES users (id)')
+    );
     expect_same(
         false,
         preg_match('/(?:INSERT|USE)\s+sweety/i', $source) === 1
     );
+});
+
+test('member repository creates user and ordered photos in a transaction', function () use ($root): void {
+    $source = file_get_contents($root.'/web/lib/database.php');
+
+    expect_same(true, str_contains($source, 'ainder_create_member_with_photos'));
+    expect_same(true, str_contains($source, 'begin_transaction'));
+    expect_same(true, str_contains($source, 'INSERT INTO user_photos'));
+    expect_same(true, str_contains($source, 'sort_order'));
+    expect_same(true, str_contains($source, 'rollback'));
 });

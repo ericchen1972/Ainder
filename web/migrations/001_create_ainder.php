@@ -43,6 +43,8 @@ try {
             google_sub VARCHAR(255) NOT NULL,
             email VARCHAR(320) NOT NULL,
             display_name VARCHAR(120) NOT NULL,
+            birth_date DATE NOT NULL,
+            gender ENUM('male', 'female') NOT NULL,
             avatar_url TEXT NULL,
             status ENUM('active', 'disabled') NOT NULL DEFAULT 'active',
             last_login_at DATETIME NULL,
@@ -55,6 +57,21 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             COLLATE=utf8mb4_unicode_ci"
     );
+    $database->query(
+        "CREATE TABLE IF NOT EXISTS user_photos (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            user_id BIGINT UNSIGNED NOT NULL,
+            file_path VARCHAR(500) NOT NULL,
+            sort_order TINYINT UNSIGNED NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY user_photos_user_sort_unique (user_id, sort_order),
+            CONSTRAINT user_photos_user_foreign
+                FOREIGN KEY (user_id) REFERENCES users (id)
+                ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            COLLATE=utf8mb4_unicode_ci"
+    );
 } catch (Throwable) {
     http_response_code(503);
     exit('Migration failed.');
@@ -64,5 +81,5 @@ header('Content-Type: application/json; charset=utf-8');
 echo json_encode([
     'ok' => true,
     'database' => 'ainder',
-    'table' => 'users',
+    'tables' => ['users', 'user_photos'],
 ], JSON_UNESCAPED_SLASHES);
