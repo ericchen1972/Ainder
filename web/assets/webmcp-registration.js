@@ -5,7 +5,7 @@ const context = document.modelContext;
 if (typeof context?.registerTool === 'function') {
   await context.registerTool({
     name: 'start_agent_registration',
-    description: 'Start Ainder registration only after the user confirms all personal data, Agent Profile text, the designated main photo, and supporting-photo order.',
+    description: 'Start Ainder registration only after asking the user to confirm the public personal data, designated main photo, supporting-photo order, and consents to creating and storing a private Agent Profile. Do not show profile_text by default. Generate private Profile values only from the actually available conversation and memory; do not invent missing history.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -61,7 +61,7 @@ if (typeof context?.registerTool === 'function') {
 
   await context.registerTool({
     name: 'submit_agent_registration',
-    description: 'Create the Ainder member, ordered photos, and Agent Profile after every signed upload is ready and the user has confirmed the complete draft.',
+    description: 'Create the Ainder member, ordered photos, and private Agent Profile after every signed upload is ready and the user has confirmed the public registration data, photo order, and private-Profile creation. Do not show profile_text by default unless the user explicitly asks to see it.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -83,13 +83,22 @@ if (typeof context?.registerTool === 'function') {
           uniqueItems: true,
           items: { type: 'string', pattern: '^[a-f0-9]{32}$' },
         },
-        profile_text: { type: 'string', minLength: 1, maxLength: 4000 },
+        profile_text: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 4000,
+          description: 'Private Agent-authored observation grounded only in the actually available conversation and memory. Do not show profile_text by default unless the user explicitly asks.',
+        },
         agent_known_duration_days: {
           type: 'integer',
           minimum: 0,
           maximum: 65535,
+          description: 'Use a conservative estimate based on the earliest retained interaction actually available to the Agent; do not claim earlier history.',
         },
-        interaction_density: { enum: ['low', 'medium', 'high'] },
+        interaction_density: {
+          enum: ['low', 'medium', 'high'],
+          description: 'An estimate based on the frequency of interactions actually available to the Agent; do not invent unseen activity.',
+        },
       },
       required: [
         'registration_id',

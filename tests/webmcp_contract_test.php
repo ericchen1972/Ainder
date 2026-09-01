@@ -27,6 +27,24 @@ test('registration page loads top-level JavaScript WebMCP tools', function () us
     ] as $policy) {
         expect_same(true, str_contains($tools, $policy));
     }
+    foreach ([
+        'confirm the public personal data',
+        'consents to creating and storing a private Agent Profile',
+        'Do not show profile_text by default',
+        'actually available conversation and memory',
+        'conservative estimate based on the earliest retained interaction actually available',
+        'based on the frequency of interactions actually available',
+    ] as $policy) {
+        expect_same(true, str_contains($tools, $policy));
+    }
+    expect_same(false, str_contains(
+        $tools,
+        'user has confirmed all personal data, Agent Profile text'
+    ));
+    expect_same(false, str_contains(
+        $tools,
+        'user has confirmed the complete draft'
+    ));
     expect_same(false, str_contains($tools, 'openai/fileParams'));
     expect_same(false, str_contains($tools, 'registration-form'));
 });
