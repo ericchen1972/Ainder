@@ -43,3 +43,41 @@ test('Unsplash client rejects non-Unsplash download endpoints', function (): voi
         'https://api.unsplash.com/photos/abc/download'
     ));
 });
+
+test('candidate fetch tool defines the four balanced portrait cohorts', function (): void {
+    $source = file_get_contents(
+        dirname(__DIR__).'/tools/fetch_unsplash_candidates.php'
+    );
+
+    foreach ([
+        'asian_male',
+        'asian_female',
+        'western_male',
+        'western_female',
+        'portrait',
+        'content_filter',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+
+    expect_same(true, str_contains($source, 'European man portrait lifestyle'));
+    expect_same(true, str_contains($source, 'European woman portrait lifestyle'));
+});
+
+test('selection tracking tool resumes from a durable photo ledger', function (): void {
+    $source = file_get_contents(
+        dirname(__DIR__).'/tools/track_unsplash_selections.php'
+    );
+
+    foreach ([
+        'demo-selected-portraits.json',
+        'demo-selected-lifestyles.json',
+        'demo-portrait-overrides.json',
+        'demo_photo_tracking.php',
+        'ainder_unsplash_track_download',
+        'rename',
+        '--scope',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+});
