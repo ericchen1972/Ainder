@@ -34,6 +34,7 @@ require __DIR__.'/signed_upload_test.php';
 require __DIR__.'/agent_profile_test.php';
 require __DIR__.'/agent_registration_test.php';
 require __DIR__.'/webmcp_contract_test.php';
+require __DIR__.'/agent_actions_test.php';
 require __DIR__.'/profile_contract_test.php';
 require __DIR__.'/candidate_test.php';
 require __DIR__.'/demo_test.php';
