@@ -109,3 +109,23 @@ test('member repository creates user and ordered photos in a transaction', funct
     expect_same(true, str_contains($source, 'sort_order'));
     expect_same(true, str_contains($source, 'rollback'));
 });
+
+test('second migration adds demo photo sources and private Agent Profiles', function () use ($root): void {
+    $source = file_get_contents($root.'/web/migrations/002_add_demo_members.php');
+
+    foreach ([
+        'basic_intro VARCHAR(50)',
+        'is_demo TINYINT(1)',
+        "source_type ENUM('local', 'unsplash')",
+        'source_photo_id VARCHAR(64)',
+        'photographer_name VARCHAR(160)',
+        'photographer_url VARCHAR(500)',
+        'source_page_url VARCHAR(500)',
+        'CREATE TABLE IF NOT EXISTS agent_profiles',
+        'agent_known_duration_days',
+        "interaction_density ENUM('low', 'medium', 'high')",
+        'UNIQUE KEY agent_profiles_user_unique',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+});
