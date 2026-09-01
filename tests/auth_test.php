@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__).'/web/lib/auth.php';
+require_once dirname(__DIR__).'/web/lib/google.php';
 
 test('Google CSRF requires matching non-empty tokens', function (): void {
     expect_same(true, ainder_google_csrf_is_valid('same', 'same'));
@@ -35,6 +36,20 @@ test('unverified or incomplete Google payload is rejected', function (): void {
         'email' => 'eva@example.com',
         'email_verified' => true,
     ]));
+});
+
+test('Google verifier failures become a rejected token', function (): void {
+    expect_same(true, function_exists('ainder_verify_google_token_with'));
+
+    $payload = ainder_verify_google_token_with(
+        'malformed-token',
+        'client-id',
+        static function (): never {
+            throw new UnexpectedValueException('Wrong number of segments');
+        }
+    );
+
+    expect_same(null, $payload);
 });
 
 test('only active members route to the app', function (): void {
