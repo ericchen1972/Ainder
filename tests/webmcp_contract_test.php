@@ -23,3 +23,12 @@ test('registration page loads top-level JavaScript WebMCP tools', function () us
     expect_same(false, str_contains($tools, 'openai/fileParams'));
     expect_same(false, str_contains($tools, 'registration-form'));
 });
+
+test('app page loads confirmed Profile WebMCP tool', function () use ($webmcpRoot): void {
+    $page = file_get_contents($webmcpRoot.'/web/app/index.php');
+    $tools = file_get_contents($webmcpRoot.'/web/assets/webmcp-app.js');
+
+    expect_same(true, str_contains($page, 'webmcp-app.js'));
+    expect_same(true, str_contains($page, 'ainder-csrf-token'));
+    expect_same(true, str_contains($tools, 'upsert_my_agent_profile'));
+});

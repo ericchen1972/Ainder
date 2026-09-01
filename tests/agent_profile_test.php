@@ -39,3 +39,13 @@ test('Profile gate checks self freshness and target existence only', function ()
         )
     );
 });
+
+test('existing members can confirm Profile create or refresh through WebMCP', function (): void {
+    $root = dirname(__DIR__);
+    $endpoint = file_get_contents($root.'/web/api/profile/upsert.php');
+    $tools = file_get_contents($root.'/web/assets/webmcp-app.js');
+
+    expect_same(true, str_contains($endpoint, 'ainder_member_id'));
+    expect_same(true, str_contains($endpoint, 'ainder_upsert_agent_profile'));
+    expect_same(true, str_contains($tools, 'upsert_my_agent_profile'));
+});

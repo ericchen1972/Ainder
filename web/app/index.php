@@ -59,10 +59,12 @@ $avatarPath = $avatarPath !== ''
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0d0e13">
+    <meta name="ainder-csrf-token" content="<?= $escape(ainder_form_csrf_token()) ?>">
     <title>Ainder</title>
     <link rel="stylesheet" href="/ainder/assets/browse.css?v=<?= $assetVersion('/assets/browse.css') ?>">
     <script type="importmap">{"imports":{"ainder-browse-model":"/ainder/assets/browse-model.js?v=<?= $assetVersion('/assets/browse-model.js') ?>"}}</script>
     <script type="module" src="/ainder/assets/browse.js?v=<?= $assetVersion('/assets/browse.js') ?>"></script>
+    <script type="module" src="/ainder/assets/webmcp-app.js?v=<?= $assetVersion('/assets/webmcp-app.js') ?>"></script>
 </head>
 <body class="browse-page">
 <main class="candidate-browser" data-current-candidate-id="<?= $escape($currentCandidateId) ?>">
