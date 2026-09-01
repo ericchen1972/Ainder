@@ -107,7 +107,6 @@ $avatarPath = $avatarPath !== ''
                 <p>請稍後再回來看看。</p>
             </div>
         <?php else: ?>
-            <button class="candidate-control candidate-next" type="button" aria-label="下一位候選人">‹</button>
             <div class="candidate-stack">
                 <?php foreach ($candidates as $candidateIndex => $candidate): ?>
                     <article
@@ -130,6 +129,7 @@ $avatarPath = $avatarPath !== ''
                                 <img
                                     src="<?= $escape($photo['file_path']) ?>"
                                     alt="<?= $escape($candidate['display_name']) ?> 的照片 <?= $photoIndex + 1 ?>"
+                                    draggable="false"
                                 >
                                 <?php if ($photo['source_type'] === 'unsplash'): ?>
                                     <figcaption>
@@ -142,17 +142,25 @@ $avatarPath = $avatarPath !== ''
                             </figure>
                         <?php endforeach; ?>
 
-                        <button class="photo-zone photo-previous" type="button" aria-label="上一張照片"></button>
-                        <button class="photo-zone photo-next" type="button" aria-label="下一張照片"></button>
+                        <?php if (count($candidate['photos']) > 1): ?>
+                            <button class="photo-control photo-previous" type="button" aria-label="上一張照片">
+                                <span aria-hidden="true">‹</span>
+                            </button>
+                            <button class="photo-control photo-next" type="button" aria-label="下一張照片">
+                                <span aria-hidden="true">›</span>
+                            </button>
+                        <?php endif; ?>
                         <div class="candidate-shade"></div>
                         <div class="candidate-copy">
-                            <h1><?= $escape($candidate['display_name']) ?> <span><?= (int) $candidate['age'] ?></span></h1>
+                            <h1>
+                                <span class="candidate-name"><?= $escape($candidate['display_name']) ?></span>
+                                <span class="candidate-age"><?= (int) $candidate['age'] ?></span>
+                            </h1>
                         </div>
                     </article>
                 <?php endforeach; ?>
             </div>
-            <button class="candidate-control candidate-previous" type="button" aria-label="上一位候選人">›</button>
-            <p class="browse-hint">← 下一位 · → 上一位</p>
+            <p class="browse-hint">拖曳卡片換人 · 卡片內箭頭換照片</p>
         <?php endif; ?>
 
         <p class="visually-hidden" aria-live="polite" data-candidate-status></p>
