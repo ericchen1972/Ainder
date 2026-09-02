@@ -29,6 +29,27 @@ test('landing stylesheet uses its file version', function () use ($root): void {
     expect_same(true, str_contains($source, 'filemtime'));
 });
 
+test('test login endpoint is allowlisted CSRF protected and session safe', function () use ($root): void {
+    $source = file_get_contents($root.'/web/auth/test.php');
+
+    foreach ([
+        "REQUEST_METHOD'] !== 'POST'",
+        'ainder_form_csrf_is_valid',
+        'ainder_test_account_scenario',
+        'ainder_reset_test_account',
+        'session_regenerate_id(true)',
+        'ainder_member_id',
+        'ainder_record_login',
+        'Location: /ainder/app/',
+    ] as $needle) {
+        expect_same(true, str_contains($source, $needle));
+    }
+    expect_same(
+        false,
+        preg_match('/\$_POST\[[^]]*(?:member_id|user_id)/', $source) === 1
+    );
+});
+
 test('placeholder pages enforce separate session states', function () use ($root): void {
     $profile = file_get_contents($root.'/web/profile/index.php');
     $app = file_get_contents($root.'/web/app/index.php');
