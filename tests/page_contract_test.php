@@ -54,6 +54,39 @@ test('landing renders Grace and John main-photo login controls', function () use
     }
 });
 
+test('landing uses short test names and an English reset notice', function () use ($root): void {
+    $page = file_get_contents($root.'/web/index.php');
+
+    foreach ([
+        'test-login-accounts',
+        'test-login-alert',
+        'Login as Grace',
+        'Login as John',
+        'Test account activity is reset, so Likes, Matches, and Messages are not retained.',
+        'For the most accurate experience, sign in with your own Google account and use ChatGPT with long-term memory about you.',
+    ] as $needle) {
+        expect_same(true, str_contains($page, $needle));
+    }
+    expect_same(false, str_contains($page, 'Login as Grace Liu'));
+    expect_same(false, str_contains($page, 'Login as John Carter'));
+    expect_same(false, str_contains($page, 'HTTP_ACCEPT_LANGUAGE'));
+    expect_same(false, str_contains($page, 'navigator.language'));
+});
+
+test('test login notice shares a responsive vertical layout', function () use ($root): void {
+    $css = file_get_contents($root.'/web/assets/app.css');
+
+    foreach ([
+        '.test-login-accounts',
+        '.test-login-alert',
+        'flex-direction: column',
+        'backdrop-filter: blur',
+        'env(safe-area-inset-bottom)',
+    ] as $needle) {
+        expect_same(true, str_contains($css, $needle));
+    }
+});
+
 test('test login endpoint is allowlisted CSRF protected and session safe', function () use ($root): void {
     $source = file_get_contents($root.'/web/auth/test.php');
 

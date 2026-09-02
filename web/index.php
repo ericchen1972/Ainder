@@ -100,28 +100,34 @@ $escape = static fn (mixed $value): string => htmlspecialchars(
 
     <?php if (count($testAccounts) === 2): ?>
         <section class="test-login-panel" aria-label="Test accounts">
-            <?php foreach ($testAccounts as $testAccount): ?>
-                <form class="test-login-form" method="post" action="/ainder/auth/test.php">
-                    <input
-                        type="hidden"
-                        name="csrf_token"
-                        value="<?= $escape($testLoginCsrf) ?>"
-                    >
-                    <input
-                        type="hidden"
-                        name="account_slug"
-                        value="<?= $escape($testAccount['slug']) ?>"
-                    >
-                    <button class="test-login-button" type="submit">
-                        <img
-                            class="test-login-avatar"
-                            src="<?= $escape($testAccount['photo_path']) ?>"
-                            alt=""
+            <div class="test-login-accounts">
+                <?php foreach ($testAccounts as $testAccount): ?>
+                    <form class="test-login-form" method="post" action="/ainder/auth/test.php">
+                        <input
+                            type="hidden"
+                            name="csrf_token"
+                            value="<?= $escape($testLoginCsrf) ?>"
                         >
-                        <span>Login as <?= $escape($testAccount['label']) ?></span>
-                    </button>
-                </form>
-            <?php endforeach; ?>
+                        <input
+                            type="hidden"
+                            name="account_slug"
+                            value="<?= $escape($testAccount['slug']) ?>"
+                        >
+                        <button class="test-login-button" type="submit">
+                            <img
+                                class="test-login-avatar"
+                                src="<?= $escape($testAccount['photo_path']) ?>"
+                                alt=""
+                            >
+                            <span><?= $testAccount['slug'] === 'grace' ? 'Login as Grace' : 'Login as John' ?></span>
+                        </button>
+                    </form>
+                <?php endforeach; ?>
+            </div>
+            <aside class="test-login-alert" role="note">
+                <strong>Test account</strong>
+                <span>Test account activity is reset, so Likes, Matches, and Messages are not retained. For the most accurate experience, sign in with your own Google account and use ChatGPT with long-term memory about you.</span>
+            </aside>
         </section>
     <?php endif; ?>
 
