@@ -29,11 +29,36 @@ test('landing stylesheet uses its file version', function () use ($root): void {
     expect_same(true, str_contains($source, 'filemtime'));
 });
 
+test('landing renders Grace and John main-photo login controls', function () use ($root): void {
+    $page = file_get_contents($root.'/web/index.php');
+    $css = file_get_contents($root.'/web/assets/app.css');
+
+    foreach ([
+        'ainder_test_account_cards',
+        'ainder_form_csrf_token',
+        '/ainder/auth/test.php',
+        'Login as ',
+        'test-login-panel',
+        'test-login-avatar',
+    ] as $needle) {
+        expect_same(true, str_contains($page, $needle));
+    }
+    foreach ([
+        '.test-login-panel',
+        '.test-login-avatar',
+        'border-radius: 50%',
+        'object-fit: cover',
+        'env(safe-area-inset-bottom)',
+    ] as $needle) {
+        expect_same(true, str_contains($css, $needle));
+    }
+});
+
 test('test login endpoint is allowlisted CSRF protected and session safe', function () use ($root): void {
     $source = file_get_contents($root.'/web/auth/test.php');
 
     foreach ([
-        "REQUEST_METHOD'] !== 'POST'",
+        "\$_SERVER['REQUEST_METHOD']",
         'ainder_form_csrf_is_valid',
         'ainder_test_account_scenario',
         'ainder_reset_test_account',

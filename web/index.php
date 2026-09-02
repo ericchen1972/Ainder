@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 require_once __DIR__.'/lib/auth.php';
 require_once __DIR__.'/lib/config.php';
+require_once __DIR__.'/lib/database.php';
 require_once __DIR__.'/lib/session.php';
+require_once __DIR__.'/lib/test_accounts.php';
 
 ainder_start_session();
 
@@ -16,7 +18,24 @@ if ($destination !== null) {
 
 $clientId = ainder_config()['google_client_id'];
 $loginFailed = ($_GET['login'] ?? '') === 'failed';
+$testLoginFailed = ($_GET['login'] ?? '') === 'test-failed';
+$testAccounts = [];
+try {
+    $testAccounts = ainder_test_account_cards(
+        ainder_database(ainder_config())
+    );
+} catch (Throwable) {
+    $testAccounts = [];
+}
+$testLoginCsrf = count($testAccounts) === 2
+    ? ainder_form_csrf_token()
+    : '';
 $cssVersion = (string) filemtime(__DIR__.'/assets/app.css');
+$escape = static fn (mixed $value): string => htmlspecialchars(
+    (string) $value,
+    ENT_QUOTES,
+    'UTF-8'
+);
 ?>
 <!doctype html>
 <html lang="zh-Hant">
@@ -79,8 +98,37 @@ $cssVersion = (string) filemtime(__DIR__.'/assets/app.css');
         </div>
     </header>
 
+    <?php if (count($testAccounts) === 2): ?>
+        <section class="test-login-panel" aria-label="Test accounts">
+            <?php foreach ($testAccounts as $testAccount): ?>
+                <form class="test-login-form" method="post" action="/ainder/auth/test.php">
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="<?= $escape($testLoginCsrf) ?>"
+                    >
+                    <input
+                        type="hidden"
+                        name="account_slug"
+                        value="<?= $escape($testAccount['slug']) ?>"
+                    >
+                    <button class="test-login-button" type="submit">
+                        <img
+                            class="test-login-avatar"
+                            src="<?= $escape($testAccount['photo_path']) ?>"
+                            alt=""
+                        >
+                        <span>Login as <?= $escape($testAccount['label']) ?></span>
+                    </button>
+                </form>
+            <?php endforeach; ?>
+        </section>
+    <?php endif; ?>
+
     <?php if ($loginFailed): ?>
         <p class="login-error" role="alert">登入失敗，請再試一次。</p>
+    <?php elseif ($testLoginFailed): ?>
+        <p class="login-error" role="alert">Test login is temporarily unavailable.</p>
     <?php endif; ?>
 </body>
 </html>
