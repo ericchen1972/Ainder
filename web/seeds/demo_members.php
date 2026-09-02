@@ -377,7 +377,7 @@ return array (
   array (
     'google_sub' => 'demo:011',
     'email' => 'demo011@ainder.invalid',
-    'display_name' => 'Liam Carter',
+    'display_name' => 'John Carter',
     'birth_date' => '1991-08-15',
     'gender' => 'male',
     'is_demo' => true,
@@ -405,7 +405,7 @@ return array (
     ),
     'agent_profile' => 
     array (
-      'profile_text' => 'Liam is grounded, active, and dependable, with an uncomplicated style of showing care through action. He communicates directly and prefers practical solutions, though he is willing to listen when reminded that not every feeling needs fixing. He values honesty, resilience, shared responsibility, and time outdoors. Hiking and hands-on projects are central interests. He offers steadiness and humor; friction may arise when his solution-first response feels emotionally premature.',
+      'profile_text' => 'John is grounded, active, and dependable, with an uncomplicated style of showing care through action. He communicates directly and prefers practical solutions, though he is willing to listen when reminded that not every feeling needs fixing. He values honesty, resilience, shared responsibility, and time outdoors. Hiking and hands-on projects are central interests. He offers steadiness and humor; friction may arise when his solution-first response feels emotionally premature.',
       'agent_known_duration_days' => 310,
       'interaction_density' => 'high',
     ),

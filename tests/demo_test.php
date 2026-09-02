@@ -108,6 +108,26 @@ test('Demo manifest validator rejects an incomplete cohort', function (): void {
     expect_same(true, $errors !== []);
 });
 
+test('test login members keep deterministic Demo identities', function (): void {
+    $manifest = require dirname(__DIR__).'/web/seeds/demo_members.php';
+    $bySub = [];
+    foreach ($manifest as $member) {
+        $bySub[$member['google_sub']] = $member;
+    }
+
+    expect_same('Grace Liu', $bySub['demo:010']['display_name']);
+    expect_same('John Carter', $bySub['demo:011']['display_name']);
+    expect_same(
+        true,
+        str_starts_with(
+            $bySub['demo:011']['agent_profile']['profile_text'],
+            'John '
+        )
+    );
+    expect_same('Ethan Park', $bySub['demo:001']['display_name']);
+    expect_same('Evelyn Grant', $bySub['demo:020']['display_name']);
+});
+
 test('frozen Demo manifest contains the exact approved cohort', function (): void {
     $manifestPath = dirname(__DIR__).'/web/seeds/demo_members.php';
     $ledgerPath = dirname(__DIR__).'/web/seeds/demo_photo_tracking.php';
