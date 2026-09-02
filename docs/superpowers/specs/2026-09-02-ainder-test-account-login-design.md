@@ -43,10 +43,16 @@ A seed job could recreate both Likes periodically. It would not guarantee the ex
 The landing page renders two test account buttons in addition to Google login:
 
 - a circular main photo;
-- the text `Login as Grace Liu` or `Login as John Carter` below the photo;
+- the text `Login as Grace` or `Login as John` below the photo;
 - the entire photo-and-label unit is one semantic submit button.
 
-Desktop placement is centered near the lower part of the landing hero. On screens at or below the existing 720 px breakpoint, the two buttons form a compact bottom row that remains above device safe-area insets.
+Desktop placement is centered above the lower part of the landing hero. On screens at or below the existing 720 px breakpoint, the two buttons form a compact row above a notice and device safe-area insets.
+
+The test-login group includes an English-only alert below the two account buttons:
+
+> Test account activity is reset, so Likes, Matches, and Messages are not retained. For the most accurate experience, sign in with your own Google account and use ChatGPT with long-term memory about you.
+
+The buttons and alert share one responsive layout container so they move together and cannot overlap. Ainder does not add locale detection for this notice or these labels; they remain English in every browser language.
 
 Photos come from each test member's current `user_photos` row where `sort_order = 1`. The landing page attempts to load these records without making the entire landing page dependent on database availability. If the database or either required record is unavailable, the test-login group is omitted while Google login and the hero remain available.
 
@@ -121,6 +127,7 @@ Automated coverage will verify:
 - an invalid slug or missing member cannot mutate data or establish a session;
 - John Carter replaces Liam Carter consistently in the Demo seed and Agent Profile text;
 - desktop and mobile CSS provide circular, non-distorted avatars and bottom safe-area spacing;
+- the short labels and English-only test-account alert render inside the shared responsive container;
 - existing PHP contract, model, syntax, and browser tests remain green.
 
 Browser verification will cover both landing-page layouts, Grace login, John login, coexistence of both Likes, logout return behavior, and the absence of console errors.
@@ -128,4 +135,3 @@ Browser verification will cover both landing-page layouts, Grace login, John log
 ## Deployment
 
 After local verification, deploy the `web/` tree to the existing production mount while preserving `config.local.php` and uploads. Rerun the deterministic Demo seed so `demo:011` becomes John Carter, then verify both test logins against the production database and UI.
-
