@@ -109,7 +109,7 @@ if (typeof context?.registerTool === 'function') {
 
   await context.registerTool({
     name: 'evaluate_current_candidate',
-    description: 'Get the current Ainder candidate Agent Profile so you can answer the user question about this person. If Profile state is missing or expired, return the structured error and do not evaluate.',
+    description: 'Get the current Ainder candidate Agent Profile so you can answer the user question about this person. When incoming_like_context is present, tell the user that this candidate already sent them a Like and use agent_opinion only as the candidate\'s Agent opinion about the signed-in member; do not treat it as part of the candidate Profile. If Profile state is missing or expired, return the structured error and do not evaluate.',
     inputSchema: {
       type: 'object',
       properties: {},

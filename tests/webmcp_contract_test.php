@@ -95,6 +95,11 @@ test('browse tools bind evaluation and Like to the current card', function () us
     expect_same(true, str_contains($tools, 'currentCandidateId()'));
     expect_same(true, str_contains($tools, '/api/candidates/evaluate.php'));
     expect_same(true, str_contains($tools, '/api/candidates/like.php'));
+    expect_same(true, str_contains($tools, 'incoming_like_context'));
+    expect_same(true, str_contains(
+        $tools,
+        'Agent opinion about the signed-in member'
+    ));
     foreach ([
         'opinion',
         'maxLength: 1000',
