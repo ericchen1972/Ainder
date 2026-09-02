@@ -34,6 +34,31 @@ test('Agent Like opinion is trimmed and cannot be empty', function (): void {
     }
 });
 
+test('incoming Like context preserves source meaning and omits empty opinions', function (): void {
+    expect_same(null, ainder_incoming_like_context_from_row(null));
+    expect_same(null, ainder_incoming_like_context_from_row([
+        'agent_opinion' => '   ',
+    ]));
+    expect_same([
+        'has_incoming_like' => true,
+        'agent_opinion' => 'Chloe Agent opinion about Eric.',
+    ], ainder_incoming_like_context_from_row([
+        'agent_opinion' => '  Chloe Agent opinion about Eric.  ',
+    ]));
+});
+
+test('candidate evaluation exposes candidate-to-requester incoming Likes', function (): void {
+    $actions = file_get_contents(
+        dirname(__DIR__).'/web/lib/agent_actions.php'
+    );
+
+    expect_same(true, str_contains(
+        $actions,
+        'ainder_find_incoming_like_context'
+    ));
+    expect_same(true, str_contains($actions, "'incoming_like_context'"));
+});
+
 test('Like API stores opinion and pending incoming Like can be removed', function (): void {
     $root = dirname(__DIR__);
     $like = file_get_contents($root.'/web/api/candidates/like.php');

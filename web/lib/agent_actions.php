@@ -27,6 +27,37 @@ function ainder_normalize_agent_opinion(string $opinion): string
     return $normalized;
 }
 
+function ainder_incoming_like_context_from_row(?array $row): ?array
+{
+    $opinion = trim((string) ($row['agent_opinion'] ?? ''));
+    if ($opinion === '') {
+        return null;
+    }
+
+    return [
+        'has_incoming_like' => true,
+        'agent_opinion' => $opinion,
+    ];
+}
+
+function ainder_find_incoming_like_context(
+    mysqli $database,
+    int $requesterId,
+    int $candidateId
+): ?array {
+    $statement = $database->prepare(
+        'SELECT agent_opinion FROM likes '
+        .'WHERE sender_user_id = ? AND recipient_user_id = ? LIMIT 1'
+    );
+    $statement->bind_param('ii', $candidateId, $requesterId);
+    $statement->execute();
+    $row = $statement->get_result()->fetch_assoc();
+
+    return ainder_incoming_like_context_from_row(
+        is_array($row) ? $row : null
+    );
+}
+
 function ainder_match_pair(int $firstUserId, int $secondUserId): array
 {
     return [min($firstUserId, $secondUserId), max($firstUserId, $secondUserId)];
@@ -116,7 +147,7 @@ function ainder_create_candidate_evaluation(
     );
     $statement->execute();
 
-    return [
+    $result = [
         'candidate' => [
             'id' => (int) $candidate['id'],
             'display_name' => (string) $candidate['display_name'],
@@ -127,6 +158,16 @@ function ainder_create_candidate_evaluation(
         'evaluation_token' => $token,
         'expires_at' => $expires,
     ];
+    $incomingLikeContext = ainder_find_incoming_like_context(
+        $database,
+        $requesterId,
+        $candidateId
+    );
+    if ($incomingLikeContext !== null) {
+        $result['incoming_like_context'] = $incomingLikeContext;
+    }
+
+    return $result;
 }
 
 function ainder_send_agent_like(
