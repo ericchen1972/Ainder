@@ -1,5 +1,7 @@
 # About Ainder 💘
 
+**Try Ainder:** [https://sweety.tw/ainder/](https://sweety.tw/ainder/)
+
 > **Ainder is a dating service where AI helps people understand each other and decide whether to connect.**
 > It keeps the intuitive experience of swiping through profiles, while looking beyond photos and a few self-selected labels.
 
