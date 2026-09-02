@@ -27,6 +27,7 @@ function expect_same(mixed $expected, mixed $actual): void
 }
 
 require __DIR__.'/auth_test.php';
+require __DIR__.'/test_accounts_test.php';
 require __DIR__.'/registration_test.php';
 require __DIR__.'/photo_test.php';
 require __DIR__.'/image_processor_test.php';
